@@ -1,0 +1,213 @@
+<application packaged="2014-11-19T13:23:51" version="2.0" xmlns="http://aps-standard.org/ns/2">
+	<id>http://openstack.parallels.trn</id>
+	<name>Openstack</name>
+	<version>1.0</version>
+	<release>65</release>
+	<homepage>http://dev.apsstandard.org/doc/poa/pa-sample-integration/starter.html</homepage>
+	<vendor>
+		<name>OpenStack</name>
+		<homepage>https://www.openstack.org</homepage>
+		<icon path="images/logo-openstack.png"/>
+	</vendor>
+	<packager>
+		<name>The Mamasú Agency</name>
+		<homepage>http://www.mamasu.es/</homepage>
+		<icon path="images/logo-mamasu.png"/>
+	</packager>
+	<presentation>
+		<summary>Simplest starter multi-tenant application for OpenStack</summary>
+		<description>OpenStack is a global collaboration of developers and cloud computing technologists producing the ubiquitous open source cloud computing platform for public and private clouds.</description>
+		<icon path="images/logo-openstack.png"/>
+		<screenshot path="images/ccp.png">
+			<description>CCP view which shows customer the details of organization and instances.</description>
+		</screenshot>
+		<screenshot path="images/dc-list.png">
+			<description>PCP view to manage all DCs</description>
+		</screenshot>
+		<screenshot path="images/view-dc.png">
+			<description>PCP view with the details of a DC</description>
+		</screenshot>
+		<screenshot path="images/dc-statistics.png">
+			<description>PCP view with the statistics of a DC</description>
+		</screenshot>
+		<changelog>
+			<version release="48" version="1.0">
+				<entry>First stable release</entry>
+			</version>
+			<version release="49" version="1.0">
+				<entry>Fixing bug on CCP with list of image slots</entry>
+			</version>
+			<version release="65" version="1.0">
+				<entry>First stable release (with documentation)</entry>
+			</version>
+		</changelog>
+		<categories>
+			<category>Infrastructure/Management</category>
+		</categories>
+		<languages>
+			<language>en</language>
+		</languages>
+		
+		<navigation id="pcp" label="OpenStack">
+			<var name="application" type-id="http://openstack.parallels.com/app"/>
+			<plugs-to id="http://www.aps-standard.org/ui/application"/>
+			<item id="ci-dc-list" label="Open Stack Data Centers">
+				<plugs-to id="http://www.parallels.com/poa/pcp/services/cloud"/>
+				<view id="ci-datacenters" label="Data Centers" src="ui/datacenters.html"/>
+				<view id="ci-datacenter-new" label="Globals Settings" src="ui/datacenter-new.html"/>
+				<view id="ci-datacenter-edit" label="Globals Settings" src="ui/datacenter-edit.html"/>
+				<view id="ci-datacenter-view" label="Globals Settings" src="ui/datacenter-view.html"/>
+				<view id="ci-roles-assignment" label="Globals Settings" src="ui/roles-assignment.html"/>
+				<view id="ci-ippool" label="Globals Settings" src="ui/ippool.html"/>
+				<view id="ci-ip-list" label="Globals Settings" src="ui/ip-list.html"/>
+				<view id="ci-iso" label="Globals Settings" src="ui/iso.html"/>
+				<view id="ci-slots" label="Globals Settings" src="ui/slots.html"/>
+				<view id="ci-slot-edit" label="Globals Settings" src="ui/slot-edit.html"/>
+				<view id="ci-slot-final" label="Globals Settings" src="ui/slot-final.html"/>
+				<view id="ci-iso-new" label="Globals Settings" src="ui/iso-new.html"/>
+				<view id="ci-iso-edit" label="Globals Settings" src="ui/iso-edit.html"/>
+				<view id="ci-profiles" label="Globals Settings" src="ui/profiles.html"/>
+				<view id="ci-statistics" label="Statistics" src="ui/statistics.html"/>
+				<view id="ci-synchronize" label="Synchronize" src="ui/synchronize.html"/>
+			</item>
+		</navigation>
+		<navigation id="pcp2" label="OpenStack">
+			<var name="application" type-id="http://openstack.parallels.com/app"/>
+			<plugs-to id="http://www.parallels.com/poa/pcp/services/cloud"/>
+			<item id="ci-wap" label="Mirantis Open Stack">
+				<plugs-to id="http://www.parallels.com/poa/pcp/services/cloud"/>
+				<item id="dc-list" label="Open Stack Data Centers">
+					<view id="datacenters" label="Data Centers"/>
+					<view id="datacenter-new" label="Globals Settings"/>
+					<view id="datacenter-edit" label="Globals Settings"/>
+					<view id="datacenter-view" label="Globals Settings"/>
+					<view id="roles-assignment" label="Globals Settings"/>
+					<view id="ippool" label="Globals Settings"/>
+					<view id="ip-list" label="Globals Settings"/>
+					<view id="iso" label="Globals Settings"/>
+					
+					<view id="slots" label="Globals Settings"/>
+					<view id="slot-edit" label="Globals Settings"/>
+					<view id="slot-final" label="Globals Settings"/>
+					
+					<view id="iso-new" label="Globals Settings"/>
+					<view id="iso-edit" label="Globals Settings"/>
+					
+					<view id="profiles" label="Globals Settings"/>
+					<view id="statistics" label="Statistics"/>
+					<view id="synchronize" label="Synchronize"/>
+				</item>
+			</item>
+		</navigation>
+		<navigation id="ccp" label="OpenStack">
+			<var name="tenant" type-id="http://openstack.parallels.com/organization"/>
+			<plugs-to id="http://www.aps-standard.org/ui/service"/>
+			<item id="tenant" label="Project">
+				<view id="tenant" label="Project">
+				</view>
+				<view id="instances" label="Virtual Environments"/>
+				<view id="instance-view" label="Virtual Environments"/>
+			</item>
+		</navigation>
+	</presentation>
+	<license-agreement must-accept="true">
+		<free/>
+		<text>
+			<name>End-User License Agreement</name>
+			<file>http://opensource.org/licenses/bsd-license</file>
+		</text>
+	</license-agreement>
+	<upgrade match="version=ge=1.0"/>
+	<service id="app">
+		<schema path="schemas/app.schema.gen"/>
+		<code engine="php" path="scripts/app.php"/>
+		<presentation>
+			<name>OpenStack Application</name>
+			<summary>OpenStack application global service</summary>
+			<infolinks>
+				<link href="doc/Mirantis_OpenStack_Dep-guide_v.1.0_20141120.pdf" class="deployment-guide">OpenStack Deployment Guide</link>
+				<link href="doc/Mirantis_OpenStack_Prov-guide_v.1.0_20141126.pdf" class="provider-guide">OpenStack Provider Guide</link><link href="doc/Mirantis_OpenStack_Usr-guide_v.1.0_20141124.pdf" class="user-guide">OpenStack User Guide</link>
+				<link href="http://www.openstack.org/projects/openstack-faq/" class="support">Openstack Support</link>
+			</infolinks>
+
+
+
+
+
+
+		</presentation>
+	</service>
+	<service id="organization">
+		<schema path="schemas/organization.schema.gen"/>
+		<code engine="php" path="scripts/organization.php"/>
+		<presentation>
+			<name>OpenStack Organization</name>
+			<summary>OpenStack organization environment</summary>
+		</presentation>
+	</service>
+
+	<service id="dc">
+		<schema path="schemas/dc.schema.gen"/>
+		<code engine="php" path="scripts/dc.php"/>
+		<presentation>
+			<name>OpenStack DC</name>
+			<summary>OpenStack DC</summary>
+		</presentation>
+	</service>
+	<service id="profile">
+		<schema path="schemas/profile.schema.gen"/>
+		<code engine="php" path="scripts/profile.php"/>
+		<presentation>
+			<name>OpenStack Profile</name>
+			<summary>OpenStack Profile</summary>
+		</presentation>
+	</service>
+	<service id="image">
+		<schema path="schemas/image.schema.gen"/>
+		<code engine="php" path="scripts/image.php"/>
+		<presentation>
+			<name>OpenStack Image</name>
+			<summary>OpenStack Image</summary>
+		</presentation>
+	</service>
+	<service id="ippools">
+		<schema path="schemas/ippool.schema.gen"/>
+		<code engine="php" path="scripts/ippool.php"/>
+		<presentation>
+			<name>OpenStack IP Pool</name>
+			<summary>OpenStack IP Pool</summary>
+		</presentation>
+	</service>
+	<service id="ipassigned">
+		<schema path="schemas/ipassigned.schema.gen"/>
+		<code engine="php" path="scripts/ipassigned.php"/>
+		<presentation>
+			<name>OpenStack IP Assigned</name>
+			<summary>OpenStack IP Assigned</summary>
+		</presentation>
+	</service>
+	<service id="ip">
+		<schema path="schemas/ip.schema.gen"/>
+		<code engine="php" path="scripts/ip.php"/>
+		<presentation>
+			<name>OpenStack IP</name>
+			<summary>OpenStack IP</summary>
+		</presentation>
+	</service>
+	<service id="heatstack">
+		<schema path="schemas/heatstack.schema.gen"/>
+		<code engine="php" path="scripts/heatstack.php"/>
+		<presentation>
+			<name>OpenStack Heat Stack</name>
+			<summary>OpenStack Heat Stack</summary>
+		</presentation>
+	</service>
+	<service id="unmanagedve">
+		<schema path="schemas/unmanagedve.schema.gen"/>
+		<code engine="php" path="scripts/unmanagedve.php"/>
+		<presentation>
+			<name>OpenStack Unmanaged Ve</name>
+			<summary>OpenStack Unmanaged Ve</summary>
+		</presentation>
+	</service>
+</application>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+        <script type="text/javascript" src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script>require([
+                "aps/load",
+                "dojo/Deferred",
+                "dojox/mvc/at",
+                "dojox/mvc/getStateful",
+                "dojox/mvc/getPlainValue",
+                "mamasu/mamadojo.js",
+                "aps/ready!"
+            ], function(load, Deferred, at, getStateful, getPlainValue, mdojo) {
+                "use strict";
+
+                
+                var $ = window.$;
+                
+                
+                var object = getStateful({
+                    aps: {
+                        type: mdojo.Types.dc
+                    },
+                    name: "",
+                    apiurl: "",
+                    user: "",
+                    password: ""
+                });
+
+                var visibility = getStateful({
+                    testok: false,
+                    testko: false,
+                    testdoing: false,
+                    testpending: true
+                });
+
+                function changeTestStatus(str) {
+                    visibility.set('testpending', false);
+                    visibility.set('testok', false);
+                    visibility.set('testko', false);
+                    visibility.set('testdoing', false);
+                    visibility.set('test' + str, true);
+                }
+
+
+
+                function checkConnection(that) {
+                    var def = new Deferred();
+                    changeTestStatus('doing');
+                    mdojo.ECRUD.get(aps.context.vars.application.aps.id + "/dcconnectiontest", getPlainValue(object)).then(function(data) {
+
+                        if (that !== undefined) {
+                            that.cancel();
+                        }
+
+                        if (data.success) {
+                            changeTestStatus('ok');
+                            mdojo.UI.showSuccess(_("Correct configuration!"));
+                            def.resolve({success: true});
+                        } else {
+
+                            changeTestStatus('ko');
+                            var msg_error = "Undefined error";
+
+                            if (data.response && data.response.text) {
+                                
+                                msg_error = $.parseJSON(data.response.text).message;
+
+                            } else {
+                                msg_error = data.responseData;
+
+                            }
+
+                            if (msg_error === 'Internal Server Error: http_code : 401') {
+                                msg_error = "Username or password incorrect";
+
+                            }
+
+                            mdojo.UI.showError(msg_error);
+
+                        }
+                    }).otherwise(function(err) {
+                        if (that !== undefined) {
+                            that.cancel();
+                        }
+
+                        var msg_error = "Undefined error";
+
+                        if (err.response && err.response.text) {
+                            msg_error = $.parseJSON(err.response.text).message;
+
+                        } else {
+                            msg_error = err.responseData;
+
+                        }
+
+                        if (msg_error === 'Internal Server Error: http_code : 401') {
+                            msg_error = "Username or password incorrect";
+
+                        }
+                        mdojo.UI.showError(msg_error);
+                        def.reject({success: false, responseData: msg_error});
+
+
+                        changeTestStatus('ko');
+                    });
+                    return def;
+                }
+
+                load(["aps/PageContainer", {id: "main_page"}, [
+                        ['<h1>', {innerHTML: _("Create datacenter")}], ["<br>"],
+                        ["aps/FieldSet", {
+                                title: _("Data Center Settings")
+                            }, [
+                                ["aps/TextBox", {
+                                        label: "DC Name",
+                                        value: at(object, 'name')
+                                    }]
+                            ]],
+                        ["aps/FieldSet", {
+                                title: _("API Connection Settings")
+                            }, [
+                                ["aps/TextBox", {
+                                        label: _("URL"),
+                                        hint: _("URL of the Data Center"),
+                                        value: at(object, 'apiurl'),
+                                        onChange: function() {
+                                            changeTestStatus('pending');
+                                        }
+                                    }],
+                                ["aps/TextBox", {
+                                        label: _("User"),
+                                        hint: _("User of the Data Center"),
+                                        value: at(object, 'user'),
+                                        onChange: function() {
+                                            changeTestStatus('pending');
+                                        }
+                                    }],
+                                ["aps/Password", {
+                                        label: _("Password"),
+                                        hint: _("Password of the Data Center"),
+                                        value: at(object, 'password'),
+                                        showResetButton: false,
+                                        showStrengthIndicator: false,
+                                        showShowPasswordButton: false,
+                                        onChange: function() {
+                                            changeTestStatus('pending');
+                                        }
+                                    }],
+                                ["aps/TextBox", {
+                                        label: _("Proxy"),
+                                        onChange: function() {
+                                            changeTestStatus('pending');
+                                        }
+                                    }]
+                            ]
+                        ],
+                        ['aps/Output', {
+                                innerHTML: "<br />"
+                            }],
+                        ["aps/Container", {cols: 2, style: "width:380px"}, [
+                                ["aps/Button", {
+                                        title: _("Check connection"),
+                                        onClick: function() {
+                                            checkConnection(this);
+                                        }
+                                    }],
+                                ["aps/Container", [
+                                        ["aps/Output", {
+                                                visible: at(visibility, 'testok'),
+                                                innerHTML:
+                                                        "<img src=\"/pem/images/icons/state-on.gif\" alt=''> " + _('Connection established')
+                                            }
+                                        ], ["aps/Output", {
+                                                visible: at(visibility, 'testko'),
+                                                innerHTML:
+                                                        "<img src=\"/pem/images/icons/state-alerted.gif\" alt=''> " + _('Unreachable connection')
+                                            }
+                                        ], ["aps/Output", {
+                                                visible: at(visibility, 'testdoing'),
+                                                innerHTML:
+                                                        "<img src=\"/pem/images/icons/state-inprogress.gif\" alt=''> " + _('Connecting...')
+                                            }
+                                        ], ["aps/Output", {
+                                                visible: at(visibility, 'testpending'),
+                                                innerHTML:
+                                                        "<img src=\"/pem/images/icons/state-off.gif\" alt=''> " + _("Untested changes")
+                                            }
+                                        ]
+                                    ]]
+                            ]],
+                        ["aps/Output", {innerHTML: "<br /><br />"}],
+                        ["aps/Button", {
+                                label: _("Save"),
+                                onClick: function() {
+                                    var that = this;
+
+                                    var antiXSS = /^([a-zA-Z0-9 _-]+)$/;
+
+
+                                    if (antiXSS.test(object.name.trim()) === false) {
+                                        mdojo.UI.showError(_("Only alphanumeric characters are allowed, whitespace, underscore and dash."));
+                                        that.cancel();
+                                        return false;
+
+                                    } else {
+                                        checkConnection(that).then(function(response) {
+                                            console.log(response);
+                                            object.set("name", object.name.trim());
+                                            object.set("apiurl", object.apiurl.trim());
+                                            object.set("user", object.user.trim());
+                                            object.set("password", object.password.trim());
+
+                                            if ((object.name === "") || (object.apiurl === "") ||
+                                                    (object.user === "") || (object.password === "")) {
+                                                mdojo.UI.showError(_("Shall not be any blank field except proxy."));
+                                                that.cancel();
+                                            } else {
+                                                mdojo.ECRUD.create(object, aps.context.vars.application.aps.id + '/dc').then(function() {
+                                                    mdojo.UI.showSuccess(_("Datacenter has been created successfully."));
+                                                    aps.apsc.gotoView('datacenters');
+                                                    that.cancel();
+                                                }).otherwise(function(err) {
+                                                    mdojo.UI.showError(err);
+                                                    that.cancel();
+                                                });
+                                            }
+                                        }).otherwise(function(err) {
+                                            mdojo.UI.log("ERROR", err);
+                                            mdojo.UI.showError(_("Unreachable connection") + ": " + err.responseData);
+                                        });
+
+                                    }
+
+                                }
+                            }],
+                        ["aps/Button", {
+                                label: "Cancel",
+                                onClick: function() {
+                                    aps.apsc.gotoView('datacenters');
+                                }
+                            }]
+                    ]]);
+            });</script>
+    </head>
+    <body>
+    </body>
+</html>

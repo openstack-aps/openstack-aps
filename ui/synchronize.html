@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+        <script type="text/javascript" src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+        <script>
+            require([
+                "aps/load",
+                "aps/ResourceStore",
+                "aps/Output",
+                "aps/Memory",
+                "dojo/promise/all",
+                "dojox/mvc/at",
+                "dojox/mvc/getStateful",
+                "aps/Switch",
+                "dijit/registry",
+                "aps/Button",
+                "aps/CheckBox",
+                "aps/WizardData",
+                "mamasu/mamadojo.js",
+                "tabslist.js",
+                "aps/ready!"
+            ], function(load, ResourceStore, Output, Memory, all, at, getStateful, Switch, registry, Button, CheckBox, WizardData, mdojo, tabslist) {
+                "use strict";
+
+
+
+                var data = WizardData.get();
+                var dc = data.dc;
+
+
+
+                var ippools = new ResourceStore({
+                    target: "/aps/2/resources/" + dc.aps.id + "/ippool?eq(os_status,disabled)"
+                });
+
+
+
+                var view = ["aps/PageContainer", {id: "main_page"}, [
+                        ["aps/Container", [
+                                ['<h1>', {innerHTML: dc.name}],
+                                mdojo.Widgets.Tabs(tabslist, 'synchronize'),
+                                ["aps/Container", {title: "Syncronize"}, [
+                                        ["aps/Grid", {
+                                                store: ippools,
+                                                id: "gridId",
+                                                columns: [
+                                                    {name: "Ippool", field: "name"},
+                                                    {name: "IP", field: "cidr"},
+                                                    {name: "Actions", renderCell: function(row) {
+                                                            return new Button({
+                                                                label: 'IP List',
+                                                                onClick: function() {
+                                                                    this.cancel();
+                                                                    var data = WizardData.get();
+                                                                    data.subnet = row.aps.id;
+                                                                    WizardData.put(data);
+                                                                    aps.apsc.gotoView('ip-list');
+                                                                }
+                                                            });
+                                                        }
+                                                    }
+                                                ]
+                                            }]
+
+                                    ]]
+                            ]]
+
+                    ]];
+                load(view);
+            });
+
+        </script>
+
+    </head>
+
+</html>

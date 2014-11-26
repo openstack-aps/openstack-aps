@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+        <script type="text/javascript" src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script>
+            require([
+                "aps/load",
+                "dojo/Deferred",
+                "dojox/mvc/getPlainValue",
+                "dojox/mvc/at",
+                "dojox/mvc/getStateful",
+                "aps/Switch",
+                "aps/Button",
+                "aps/WizardData",
+                "mamasu/mamadojo.js",
+                "aps/ready!"
+            ], function(load, Deferred, getPlainValue, at, getStateful, Switch, Button, WizardData, mdojo) {
+                "use strict";
+
+                var $ = window.$;
+                
+                var visibility = getStateful({
+                    testok: false,
+                    testko: false,
+                    testdoing: false,
+                    testpending: true,
+                    password: true,
+                    labelPassword: true
+                });
+
+                var data = WizardData.get();
+                var dc = getStateful(data.dc);
+
+                function changeTestStatus(str) {
+                    visibility.set('testpending', false);
+                    visibility.set('testok', false);
+                    visibility.set('testko', false);
+                    visibility.set('testdoing', false);
+                    visibility.set('test' + str, true);
+                }
+                function checkConnection(that) {
+                    var def = new Deferred();
+                    changeTestStatus('doing');
+                    mdojo.ECRUD.get(aps.context.vars.application.aps.id + "/dcconnectiontest", getPlainValue(dc)).then(function(data) {
+                        if (that !== undefined) {
+                            that.cancel();
+                        }
+                        if (data.success) {
+                            changeTestStatus('ok');
+                            mdojo.UI.showSuccess(_("Correct configuration!"));
+                            def.resolve({success: true});
+                        } else {
+                            changeTestStatus('ko');
+                            var msg_error = "Undefined error";
+                            if (data.response && data.response.text) {
+                                msg_error = $.parseJSON(data.response.text).message;
+                            } else {
+                                msg_error = data.responseData;
+
+                            }
+                            if (msg_error == 'Internal Server Error: http_code : 401') {
+                                msg_error = "Username or password incorrect";
+
+                            }
+                            mdojo.UI.showError(msg_error);
+                        }
+                    }).otherwise(function(err) {
+                        if (that !== undefined) {
+                            that.cancel();
+                            console.log("hola4");
+                        }
+                        var msg_error = "Undefined error";
+
+                        if (err.response && err.response.text) {
+                            msg_error = $.parseJSON(err.response.text).message;
+
+                        } else {
+                            msg_error = err.responseData;
+
+                        }
+
+                        if (msg_error == 'Internal Server Error: http_code : 401') {
+                            msg_error = "Username or password incorrect";
+
+                        }
+
+                        mdojo.UI.showError(msg_error);
+                        changeTestStatus('ko');
+
+                    });
+                    return def;
+                }
+
+                var view = ["aps/PageContainer", {id: "main_page"}, [
+                        ["aps/Container", [
+                                ['<h1>', {innerHTML: dc.name}], ["<br>"],
+                                ["aps/FieldSet", {
+                                        title: _("Data Center Settings")
+                                    }, [
+                                        ["aps/TextBox", {
+                                                label: "DC Name",
+                                                value: at(dc, 'name')
+                                            }]
+                                    ]],
+                                ["aps/FieldSet", {
+                                        title: _("API Connection Settings")
+                                    }, [
+                                        ["aps/Output", {
+                                                label: _("URL"),
+                                                hint: _("URL of the Data Center"),
+                                                value: at(dc, 'apiurl'),
+                                                onChange: function() {
+                                                    changeTestStatus('pending');
+                                                }
+                                            }],
+                                        ["aps/TextBox", {
+                                                label: _("User"),
+                                                hint: _("User of the Data Center"),
+                                                value: at(dc, 'user'),
+                                                onChange: function() {
+                                                    visibility.set('password', true);
+                                                    visibility.set('labelPassword', false);
+                                                    changeTestStatus('pending');
+                                                    dc.set('password', '');
+                                                }
+                                            }],
+                                        ["aps/Password", {
+                                                label: _("Password"),
+                                                hint: _("Password of the Data Center"),
+                                                visibility: at(dc, "password"),
+                                                value: at(dc, 'password'),
+                                                showResetButton: false,
+                                                showStrengthIndicator: false,
+                                                showShowPasswordButton: true,
+                                                onChange: function() {
+                                                    changeTestStatus('pending');
+                                                }
+                                            }],
+                                        ["aps/TextBox", {
+                                                label: _("Proxy"),
+                                                onChange: function() {
+                                                    changeTestStatus('pending');
+                                                }
+                                            }]
+                                    ]
+                                ],
+                                ["<br>"],
+                                ["aps/Container", {cols: 2, style: "width:380px"}, [
+                                        ["aps/Button", {
+                                                title: _("Check connection"),
+                                                onClick: function() {
+                                                    checkConnection(this);
+                                                }
+                                            }],
+                                        ["aps/Container", [
+                                                ["aps/Output", {
+                                                        visible: at(visibility, 'testok'),
+                                                        innerHTML:
+                                                                "<img src=\"/pem/images/icons/state-on.gif\" alt=''> " + _('Connection established')
+                                                    }
+                                                ], ["aps/Output", {
+                                                        visible: at(visibility, 'testko'),
+                                                        innerHTML:
+                                                                "<img src=\"/pem/images/icons/state-alerted.gif\" alt=''> " + _('Unreachable connection')
+                                                    }
+                                                ], ["aps/Output", {
+                                                        visible: at(visibility, 'testdoing'),
+                                                        innerHTML:
+                                                                "<img src=\"/pem/images/icons/state-inprogress.gif\" alt=''> " + _('Connecting...')
+                                                    }
+                                                ], ["aps/Output", {
+                                                        visible: at(visibility, 'testpending'),
+                                                        innerHTML:
+                                                                "<img src=\"/pem/images/icons/state-off.gif\" alt=''> " + _("Untested changes")
+                                                    }
+                                                ]
+                                            ]]
+                                    ]],
+                                ["<br>"],
+                                ["aps/Button", {
+                                        label: "Save",
+                                        onClick: function() {
+                                            var that = this;
+                                            var antiXSS = /^([a-zA-Z0-9 _-]+)$/;
+                                            if (antiXSS.test(dc.name.trim()) === false) {
+                                                mdojo.UI.showError(_("Only alphanumeric characters are allowed, whitespace, underscore and dash."));
+                                                that.cancel();
+                                                return false;
+                                            } else {
+                                                checkConnection(this).then(function() {
+                                                    if ((dc.name === "") || (dc.apiurl === "") ||
+                                                            (dc.user === "") || (dc.password === "")) {
+                                                        mdojo.UI.showError(_("Shall not be any blank field except proxy."));
+                                                        that.cancel();
+                                                    } else {
+
+
+                                                        dc.apiurl = dc.apiurl.replace("https://", "").replace("http://", "");
+                                                        dc.apiurl = "http://" + dc.apiurl;
+
+                                                        mdojo.ECRUD.update(getPlainValue(dc)).then(function(updatedDC) {
+                                                            WizardData.put({dc: updatedDC});
+                                                            mdojo.UI.showSuccess(_("Changes are saved correctly."));
+                                                            aps.apsc.gotoView('datacenters');
+                                                        }).otherwise(function(err) {
+                                                            mdojo.UI.showError(err);
+                                                            that.cancel();
+                                                        });
+                                                    }
+                                                }).otherwise(function(err) {
+                                                    mdojo.UI.showError(err.responseData);
+                                                    that.cancel();
+                                                });
+                                            }
+
+                                        }
+                                    }],
+                                ["aps/Button", {
+                                        label: "Cancel",
+                                        onClick: function() {
+                                            aps.apsc.gotoView('datacenters');
+                                        }
+                                    }]
+                            ]]
+                    ]];
+                load(view);
+            });
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

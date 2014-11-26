@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+        <style>
+            .green .gauge-filled, .green .gaugeFilled {
+                background-color: #4D944D;
+                box-shadow: 1px 0 0 #006600 inset, 0 1px 0 #006600 inset, -1px 0 0
+                    #006600 inset, 0 -1px 0 #006600 inset, 0 2px 0 #CCE0CC inset;
+            }
+        </style>
+        <script type="text/javascript" src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+        <script>require([
+                "aps/load",
+                "dijit/registry",
+                "dojo/dom-style",
+                "dojo/Deferred",
+                "dojo/promise/all",
+                "aps/Output",
+                "aps/Container",
+                "dojox/mvc/at",
+                "dojox/mvc/getPlainValue",
+                "dojox/mvc/getStateful",
+                "aps/Switch",
+                "aps/Button",
+                "aps/CheckBox",
+                "aps/WizardData",
+                "mamasu/mamadojo.js",
+                "aps/ResourceStore",
+                "aps/Memory",
+                "dojo/when",
+                "aps/ProgressBar",
+                "aps/ready!"
+            ], function(load, registry, domStyle, Deferred, all, Output, Container, at, getPlainValue, getStateful, Switch, Button, CheckBox, WizardData, mdojo, Store, Memory, when) {
+                "use strict";
+                function instancesPanel() {
+                    var def = new Deferred();
+                    mdojo.ECRUD.read(aps.context.vars.tenant.aps.id + "/getvms").then(function(instances) {
+
+                        var active_list_array = [];
+                        if (instances.length === 0) {
+                            def.resolve(["aps/Output", {innerHTML: _("There are no virtual environments yet.")}]);
+                        } else {
+                            for (var i = 0; i < instances.length; ++i) {
+
+                                var instance_data = {};
+                                var instance = instances[i];
+                                instance_data.name = instance.name;
+                                instance_data.tenant_id = instance.info.tenant_idƒ;
+                                instance_data.aps_id = instance.aps.id;
+                                instance_data.instance_id = instance.instance_id;
+                                instance_data.status = instance.info['status'];
+                                if (instance_data.status === "SHUTOFF") {
+
+                                    instance_data.status_view = '<span class="caption-status status-stopped">' + _(instance_data.status) + '</span>';
+                                    instance_data.start_disable = false;
+                                    instance_data.restart_disable = true;
+                                    instance_data.stop_disable = true;
+                                } else if (instance_data.status === "ACTIVE") {
+                                    instance_data.status_view = '<span class="caption-status status-starting">' + _(instance_data.status) + '</span>';
+                                    instance_data.start_disable = true;
+                                    instance_data.restart_disable = false;
+                                    instance_data.stop_disable = false;
+                                } else {
+                                    instance_data.status_view = '<span class="caption-status status-maintenance">' + _(instance_data.status) + '</span>';
+                                    instance_data.start_disable = true;
+                                    instance_data.restart_disable = true;
+                                    instance_data.stop_disable = true;
+                                }
+
+                                var new_active_item = ["aps/ActiveItem", {
+                                        iconName: "/pem/images/icons/hosts_32x32.gif",
+                                        title: instance_data.name,
+                                        info: instance_data.status_view,
+                                        collapsible: false,
+                                        description: [
+                                            new Output({
+                                                innerHTML: instance_data.internalip,
+                                                className: "summary-item"
+                                            })
+                                        ]
+                                    }, [
+                                        ["aps/ToolbarButton", {
+                                                "class": "sb-enable",
+                                                id: i + "start",
+                                                label: "Start",
+                                                cancellid: i,
+                                                apsId: instance_data.aps_id,
+                                                instanceid: instance_data.instance_id,
+                                                disabled: instance_data.start_disable,
+                                                onClick: function() {
+                                                    var that = this;
+                                                    that.cancel();
+                                                    console.log("starting " + that.apsId);
+                                                    mdojo.ECRUD.get(that.apsId + "/start").then(function(data) {
+                                                        if (data.response === "ok") {
+                                                            console.log("ok");
+                                                            mdojo.UI.showSuccess(_("Starting server"));
+                                                            that.set("disabled", true);
+                                                        } else {
+
+                                                            mdojo.UI.showError(data.response);
+                                                        }
+
+
+                                                    }).otherwise(function(err) {
+                                                        console.log("ERROR " + err.message);
+                                                        mdojo.UI.showError(err.message);
+                                                    });
+                                                }
+                                            }],
+                                        ["aps/ToolbarButton", {
+                                                "class": "sb-disable",
+                                                label: "Stop",
+                                                id: i + "stop",
+                                                cancellid: i,
+                                                apsId: instance_data.aps_id,
+                                                instanceid: instance_data.instance_id,
+                                                disabled: instance_data.stop_disable,
+                                                onClick: function() {
+                                                    var that = this;
+                                                    that.cancel();
+                                                    console.log("stoping " + that.i + "restart");
+                                                    mdojo.ECRUD.get(that.apsId + "/stop").then(function(data) {
+
+                                                        if (data.response === "ok") {
+                                                            mdojo.UI.showSuccess(_("Stopping server"));
+                                                            console.log("Disabling " + that.cancellid + "restart");
+                                                            that.set("disabled", true);
+                                                            var object = registry.byId(that.cancellid + "restart");
+                                                            if (object !== "undefined")
+                                                                object.set("disabled", true);
+                                                            else {
+                                                                console.log("button undefined");
+                                                            }
+                                                        } else {
+
+                                                            mdojo.UI.showError(data.response);
+                                                        }
+                                                    }).otherwise(function(err) {
+                                                        console.log("ERROR " + err.message);
+                                                        mdojo.UI.showError(err.message);
+                                                    });
+                                                }
+                                            }],
+                                        ["aps/ToolbarButton", {
+                                                label: "Restart",
+                                                "class": "sb-refresh",
+                                                id: i + "restart",
+                                                cancellid: i,
+                                                apsId: instance_data.aps_id,
+                                                instanceid: instance_data.instance_id,
+                                                disabled: instance_data.restart_disable,
+                                                onClick: function() {
+                                                    var that = this;
+                                                    that.cancel();
+                                                    mdojo.ECRUD.get(that.apsId + "/restart").then(function(data) {
+
+                                                        if (data.response === "ok") {
+                                                            console.log("ok");
+                                                            that.set("disabled", true);
+                                                            console.log("Disabling " + that.cancellid + "stop");
+                                                            var object = registry.byId(that.cancellid + "stop");
+                                                            if (object !== 'undefined')
+                                                                object.set("disabled", true);
+                                                            else {
+                                                                console.log("button undefined");
+                                                            }
+
+                                                            mdojo.UI.showSuccess(_("Restart server"));
+                                                        } else {
+                                                            mdojo.UI.showError(data.response);
+                                                        }
+
+                                                    }).otherwise(function(err) {
+                                                        console.log("ERROR " + err.message);
+                                                        mdojo.UI.showError(err.message);
+                                                    });
+                                                }
+                                            }]
+                                    ]];
+                                active_list_array.push(new_active_item);
+                            }
+                            def.resolve(["aps/ActiveList", active_list_array]);
+                        }
+                    }).otherwise(function(err) {
+                        var obj1 = registry.byId("ves_loader");
+                        var obj_err1 = registry.byId("ves_error");
+                        obj1.set("visible", false);
+                        obj_err1.set("visible", true);
+                        console.log("ERROR", err);
+//                        mdojo.UI.showError("It is not possible to retrieve the vms information, please try again later.");
+//                        def.resolve(["<p>", {innerHTML: _("Unexpected error while getting virtual environments")}]);
+                    });
+                    return def;
+                }
+
+                var store = new Store({
+                    target: "/aps/2/resources/"
+                });
+                when(store.get(aps.context.vars.tenant.aps.id), function(tenant) {
+                    when(store.get(tenant.dc.aps.id), function(dc) {
+
+                        var calls = [];
+                        calls.push(store.get(dc.aps.id + "/getslots"));
+//                        calls.push(instancesPanel());
+                        all(calls).then(function(data) {
+                            var slots = data[0];
+//                            var ves = data[1];
+                            console.log("SLOTS", slots);
+//                            console.log("VES", ves);
+                            function getreadeable(ms) {
+                                var secs = ms / 1000;
+                                ms = Math.floor(ms % 1000);
+                                var minutes = secs / 60;
+                                secs = Math.floor(secs % 60);
+                                var hours = minutes / 60;
+                                minutes = Math.floor(minutes % 60);
+                                var days = hours / 24;
+                                hours = Math.floor(hours % 24);
+                                days = Math.floor(days);
+                                var readdate = "";
+                                if (days > 0)
+                                    readdate += days + " days ";
+                                if (hours > 0)
+                                    readdate += hours + " Hours ";
+                                if (minutes > 0)
+                                    readdate += minutes + " Minutes ";
+                                if (secs > 0)
+                                    readdate += secs + " Seconds ";
+                                return readdate;
+                            }
+
+                            function getSlotTitle(slotNum) {
+                                for (var i = 0; i < slots.length; i++) {
+                                    if (slots[i].id === slotNum) {
+                                        return slots[i].name;
+                                    }
+                                }
+                                return _("Unknown Title");
+                            }
+                            function getMap(limit) {
+                                var map = [];
+                                var warning = limit * 0.70;
+                                var dangerous = limit * 0.90;
+                                map[0] = "green";
+                                map[warning] = "warn";
+                                map[dangerous] = "over";
+                                return map;
+                            }
+                            function getGauges() {
+                                var gauges = [];
+                                gauges.push(["aps/Gauge", {
+                                        background: "green",
+                                        title: "CPU Usage",
+                                        legend: cpu_label,
+                                        minimum: 0,
+                                        maximum: cpu_lim,
+                                        value: cpu_usage,
+                                        classesMap: getMap(cpu_lim)
+                                    }]);
+                                gauges.push(["aps/Gauge", {
+                                        title: "Memory Usage",
+                                        legend: memory_label,
+                                        minimum: 0,
+                                        maximum: memory_lim,
+                                        value: memory_usage,
+                                        classesMap: getMap(memory_lim)
+                                    }]);
+                                gauges.push(["aps/Gauge", {
+                                        title: "Disk Size Usage",
+                                        legend: disk_label,
+                                        minimum: 0,
+                                        maximum: disk_size_lim,
+                                        value: disk_size_usage,
+                                        classesMap: getMap(disk_size_lim)
+                                    }]);
+                                gauges.push(["aps/Gauge", {
+                                        title: "Traffic out Usage",
+                                        legend: traffic_label,
+                                        minimum: 0,
+                                        maximum: traffic_out_lim,
+                                        value: traffic_out_usage,
+                                        classesMap: getMap(traffic_out_lim)
+                                    }]);
+                                gauges.push(["aps/Gauge", {
+                                        title: "IPs Usage",
+                                        legend: ips_label,
+                                        minimum: 0,
+                                        maximum: ips_lim,
+                                        value: ips_usage,
+                                        classesMap: getMap(ips_lim)
+                                    }]);
+                                var val = 0;
+                                for (var i = 1; i <= 20; i++) {
+                                    if (typeof tenant['slot_' + i] !== 'undefined') {
+                                        val = tenant['slot_' + i].usage;
+                                        if (val > 0) {
+                                            gauges.push(["aps/Gauge", {
+                                                    title: getSlotTitle(i),
+                                                    legend: getreadeable(val),
+                                                    minimum: 0,
+                                                    maximum: val * times,
+                                                    value: val,
+                                                    classesMap: getMap(val * times)
+                                                }]);
+                                        }
+                                    }
+                                }
+
+                                return gauges;
+                            }
+                            ;
+                            var cpu_usage = -1;
+                            var memory_usage = -1;
+                            var disk_size_usage = -1;
+                            var traffic_out_usage = -1;
+                            var ips_usage = -1;
+                            var cpu_lim = -1;
+                            var memory_lim = -1;
+                            var disk_size_lim = -1;
+                            var traffic_out_lim = -1;
+                            var ips_lim = -1;
+                            var cpu_label = "";
+                            var memory_label = "";
+                            var disk_label = "";
+                            var traffic_label = "";
+                            var ips_label = "";
+                            if (tenant.model === "payg") {
+
+                                //PAYG
+                                cpu_usage = (tenant.cpu_usage.usage !== null) ? tenant.cpu_usage.usage : 0;
+                                memory_usage = (tenant.memory_usage.usage !== null) ? tenant.memory_usage.usage : 0;
+                                disk_size_usage = (tenant.disk_size_usage.usage !== null) ? tenant.disk_size_usage.usage : 0;
+                                traffic_out_usage = (tenant.traffic_out_usage.usage !== null) ? tenant.traffic_out_usage.usage : 0;
+                                ips_usage = (tenant.ips_usage.usage !== null) ? tenant.ips_usage.usage : 0;
+                                //To show how it's limits are unlimited in PAYG model just define limit as 2 times the current value
+
+                                var times = 2;
+                                cpu_lim = cpu_usage * times;
+                                memory_lim = memory_usage * times;
+                                disk_size_lim = disk_size_usage * times;
+                                traffic_out_lim = traffic_out_usage * times;
+                                ips_lim = ips_usage * times;
+                                cpu_lim = (cpu_lim === 0 ? times : cpu_lim);
+                                memory_lim = (memory_lim === 0 ? times : memory_lim);
+                                disk_size_lim = (disk_size_lim === 0 ? times : disk_size_lim);
+                                traffic_out_lim = (traffic_out_lim === 0 ? times : traffic_out_lim);
+                                ips_lim = (ips_lim === 0 ? times : ips_lim);
+                                cpu_label = cpu_usage + " unit used of unlimited units";
+                                memory_label = memory_usage + " MB used of unlimited MB";
+                                disk_label = disk_size_usage + " GB used of unlimited GB";
+                                traffic_label = traffic_out_usage + " KB used of unlimited KB";
+                                ips_label = ips_usage + " unit of unlimited units";
+                            } else {
+
+                                //FLAT
+                                cpu_usage = (tenant.cpu_counter.usage !== null) ? tenant.cpu_counter.usage : 0;
+                                memory_usage = (tenant.memory_counter.usage !== null) ? tenant.memory_counter.usage : 0;
+                                disk_size_usage = (tenant.disk_size_counter.usage !== null) ? tenant.disk_size_counter.usage : 0;
+                                traffic_out_usage = (tenant.traffic_out_counter.usage !== null) ? tenant.traffic_out_counter.usage : 0;
+                                ips_usage = (tenant.ips_counter.usage !== null) ? tenant.ips_counter.usage : 0;
+                                cpu_lim = tenant.cpu_counter.limit;
+                                memory_lim = tenant.memory_counter.limit;
+                                disk_size_lim = tenant.disk_size_counter.limit;
+                                traffic_out_lim = tenant.traffic_out_counter.limit;
+                                ips_lim = tenant.ips_counter.limit;
+                                cpu_label = cpu_usage + " unit used of " + cpu_lim + " units";
+                                memory_label = memory_usage + " MB used of " + memory_lim + " MB";
+                                disk_label = disk_size_usage + " GB used of " + disk_size_lim + " GB";
+                                traffic_label = traffic_out_usage + " KB used of " + traffic_out_lim + " KB";
+                                ips_label = ips_usage + " unit of " + ips_lim + " units";
+                            }
+                            var statefulTenant = getStateful(tenant);
+                            var gaugesArray = getGauges();
+                            dc.apiurl += ':9080/dashboard/auth/login/';
+                            load(["aps/PageContainer", {id: 'main_page'}, [
+                                    ["aps/Toolbar", [
+                                            ["aps/ToolbarButton", {
+                                                    label: _("Refresh"),
+                                                    iconClass: "sb-refresh",
+                                                    onClick: function() {
+                                                        var that = this;
+                                                        mdojo.ECRUD.read(tenant.aps.id + "/synchproject").then(function() {
+                                                            mdojo.UI.showSuccess(_("Project information (usage and instances) updated successfuly."));
+                                                            that.cancel();
+                                                        }).otherwise(function(err) {
+                                                            mdojo.UI.showError(err);
+                                                            that.cancel();
+                                                        });
+                                                    }
+                                                }]
+                                        ]],
+                                    ["aps/ActiveList", [
+                                            ["aps/ActiveItem", {
+                                                    iconName: "/pem/images/icons/server_manager_32x32.gif",
+                                                    title: tenant.name,
+                                                    collapsible: false
+                                                }, [
+                                                    ["aps/InfoBoard", gaugesArray],
+                                                    ["aps/Container", [
+                                                            ["aps/Container", {style: "position:relative;float:left;width:37%"}, [
+                                                                    ["aps/FieldSet", {title: _("Profile Information")}, [
+                                                                            ["aps/Output", {label: "Project Name", content: tenant.name}],
+                                                                            ["aps/Output", {label: "Email", content: tenant.name}]
+                                                                        ]]
+                                                                ]],
+                                                            ["aps/Container", {
+                                                                    style: "position:relative;float:left;width:60%;margin-left:3%;padding-bottom:20px"
+                                                                }, [
+                                                                    ["aps/FieldSet", {title: "Credentials"}, [
+                                                                            ["aps/Output", {label: "Api url", content: "<a href='" + dc.apiurl.replace("https://", "http://") + "' target='_blank'>" + dc.apiurl + "</a>"}],
+                                                                            ["aps/Output", {label: "Login", content: tenant.username}],
+                                                                            ["aps/Password", {
+                                                                                    label: "Password",
+                                                                                    disabled: true,
+                                                                                    showStrengthIndicator: false,
+                                                                                    showResetButton: false,
+                                                                                    value: at(statefulTenant, "password")
+                                                                                }],
+                                                                            ["aps/Button", {
+                                                                                    label: "&nbsp",
+                                                                                    iconClass: "sb-change-password",
+                                                                                    onClick: function() {
+                                                                                        var that = this;
+                                                                                        tenant.password = "new_password";
+                                                                                        mdojo.ECRUD.update(tenant).then(function(newtenant) {
+                                                                                            statefulTenant.set("password", newtenant.password);
+                                                                                            mdojo.UI.showSuccess(_("Password generated successfully."));
+                                                                                            that.cancel();
+                                                                                        }).otherwise(function(err) {
+                                                                                            mdojo.UI.showError(err);
+                                                                                            that.cancel();
+                                                                                        });
+                                                                                    }
+                                                                                }]
+
+                                                                        ]
+                                                                    ]
+
+                                                                ]]
+                                                        ]]
+                                                ]]
+                                        ]]
+                                ]]).then(function() {
+                                var calls = [];
+                                calls.push(instancesPanel());
+                                var secondContainer = [["aps/Output", {id: "ves_loader", innerHTML: "<div class='page-loading'  style='position:inherit;'>" + _("Loading...") + "</div>"}], ["aps/Message", {id: "ves_error", description: "It is not possible to retrieve the vms information, please try again later.", type: "error", style: {display: "none"}}]];
+                                load(secondContainer, "main_page").then(function() {
+                                    var obj = registry.byId("ves_loader");
+                                    all(calls).then(function(vms) {
+                                        obj.set("visible", false);
+                                        var ves = vms[0];
+                                        load(ves, "main_page");
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

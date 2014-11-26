@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+        <script type="text/javascript" src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+        <script>
+            require([
+                "aps/load",
+                "aps/Output",
+                "aps/Memory",
+                "dojo/promise/all",
+                "aps/Container",
+                "dojox/mvc/at",
+                "dojox/mvc/getStateful",
+                "aps/Switch",
+                "dijit/registry",
+                "aps/Button",
+                "aps/CheckBox",
+                "aps/WizardData",
+                "mamasu/mamadojo.js",
+                "mamasu/storeWave.js",
+                "aps/ResourceStore",
+                "dojo/when",
+                "tabslist.js",
+                "aps/ready!"
+            ], function(load, Output, Memory, all, Container, at, getStateful, Switch, registry, Button, CheckBox, WizardData, mdojo, StoreWave, Store, when, tabslist) {
+                var data = WizardData.get();
+                var dc = data.dc;
+                function getMap(limit) {
+
+                    var map = [];
+
+                    var warning = limit * 0.70;
+                    var dangerous = limit * 0.90;
+
+                    map[warning] = "warn";
+                    map[dangerous] = "over";
+                    return map;
+                }
+
+                var storeWave1 = new StoreWave();
+
+                storeWave1.addXHRPromise("get", "/aps/2/resources/" + dc.aps.id + "/meterallstatistics", "");
+                storeWave1.addXHRPromise("get", "/aps/2/resources/" + dc.aps.id + "/gettotalipstraffic", "");
+                storeWave1.execute().then(function() {
+                    storeWave1.mapResults(function(data, data2) {
+
+                        var traffic_out_total = 0;
+                        var ips_total = 0;
+                        var statistics = data.hypervisor_statistics;
+
+                        traffic_out_total = data2.total_traffic_out;
+                        ips_total = data2.total_ips;
+                        console.log(ips_total + " : " + traffic_out_total);
+
+
+
+                        var traffic_out_label = traffic_out_total + " KB used";
+                        var ips_label = ips_total + " units used ";
+
+                        load(["aps/PageContainer", {
+                                id: 'main_page'
+                            }, [
+                                ['<h1>', {
+                                        innerHTML: dc.name
+                                    }],
+                                mdojo.Widgets.Tabs(tabslist, 'statistics'),
+                                ["aps/FieldSet", {
+                                        title: "Datacenter Statistics: "
+                                    }, [
+                                        ["aps/Gauge", {
+                                                id: "gauge-test",
+                                                label: "CPU Usage",
+                                                legend: "${value} unit used of ${maximum} units",
+                                                minimum: 0,
+                                                maximum: statistics.vcpus,
+                                                value: statistics.vcpus_used,
+                                                classesMap: getMap(statistics.vcpus)
+
+                                            }],
+                                        ["aps/Gauge", {
+                                                label: "Memory Usage",
+                                                legend: "${value} MB used of ${maximum} MB",
+                                                minimum: 0,
+                                                maximum: statistics.memory_mb,
+                                                value: statistics.memory_mb_used,
+                                                classesMap: getMap(statistics.memory_mb)
+
+                                            }],
+                                        ["aps/Gauge", {
+                                                label: "Disk Space",
+                                                legend: "${value} GB used of ${maximum} GB",
+                                                minimum: 0,
+                                                maximum: statistics.local_gb,
+                                                value: statistics.local_gb_used,
+                                                classesMap: getMap(statistics.local_gb)
+
+                                            }],
+                                        ["aps/Gauge", {
+                                                label: "Ips used",
+                                                legend: ips_label,
+                                                minimum: 0,
+                                                maximum: ips_total,
+                                                value: ips_total,
+                                                classesMap: getMap(traffic_out_total * 122)
+
+                                            }],
+                                        ["aps/Gauge", {
+                                                label: "Traffic Out KB",
+                                                legend: traffic_out_label,
+                                                minimum: 0,
+                                                maximum: traffic_out_total,
+                                                value: traffic_out_total,
+                                                classesMap: getMap(traffic_out_total * 122)
+
+                                            }]
+                                    ]]
+
+                            ]]);
+
+
+                        console.log(data2);
+                    });
+                }).otherwise(function(err) {
+                    console.log(err, 'background: #222; color: #bada55');
+                });
+            });
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+        <script>
+            require([
+                "aps/load",
+                "aps/Output",
+                "aps/Memory",
+                "dojo/promise/all",
+                "dojox/mvc/at",
+                "dojox/mvc/getStateful",
+                "dojox/mvc/getPlainValue",
+                "aps/Switch",
+                "dijit/registry",
+                "aps/Button",
+                "aps/TextBox",
+                "aps/CheckBox",
+                "aps/WizardData",
+                "aps/ResourceStore",
+                "dojo/Deferred",
+                "mamasu/mamadojo.js",
+                "tabslist.js",
+                "aps/Container",
+                "aps/ready!"
+            ],
+                    function(load, Output, Memory, all, at, getStateful, getPlainValue, Switch, registry, Button, TextBox, CheckBox, WizardData, ResourceStore, Deferred, mdojo, tabslist, Container) {
+
+
+
+                        var data = WizardData.get();
+                        var dc = data.dc;
+
+                        console.log("DCC", dc);
+
+                        
+                        function get_slots_grid() {
+                            var store = new ResourceStore({target: "/aps/2/resources/" + dc.aps.id + "/getslots"});
+							
+                            console.log("store", store);
+                            
+                            load(["aps/PageContainer", {id: 'main_page'},
+                                [
+                                    ["aps/Container", [
+                                            ['<h1>', {innerHTML: dc.name}],
+                                            mdojo.Widgets.Tabs(tabslist, 'slots'),
+                                            ["aps/Container", {
+                                                    title: _("Slots")
+                                                }, [
+													["<p>", {
+													    innerHTML: _("As a provider, you can charge for usage of operating system offered to your customers in form of Glance images by linking the images to the slots below. Then, usage of the respective images (in hours) will be reported to these slots.<br>The same slots can be included to service templates as resource counters, and thus included to the service plan as billable resources.")
+													}],
+                                                    ["aps/Grid", {
+                                                            store: store,
+                                                            id: "imagesGrid",
+                                                            showPaging: false,
+                                                            sort: {attribute: "id", descending: true},
+                                                            columns: [
+                                                                {name: "Slot", field: "name"},
+                                                                {name: "OS",
+                                                                    renderCell: function(row) {
+
+                                                                        console.log("ROW", row);
+
+                                                                        var container = new Container();
+                                                                        container.addChild(new Output({
+                                                                            content: (row.imagesDisplayName !== "") ? row.imagesDisplayName : _("None")
+
+                                                                        }));
+                                                                        return container;
+                                                                    }
+                                                                },
+                                                                {name: _("Status"),
+                                                                    renderCell: function(row) {
+
+
+                                                                        var container = new Container();
+                                                                        container.addChild(new Output({
+                                                                            content: (row.imagesDisplayName !== "") ? "Active" : _("Not registered")
+
+                                                                        }));
+                                                                        return container;
+
+
+                                                                    }
+                                                                },
+                                                                {name: "Actions",
+                                                                    renderCell: function(row) {
+
+                                                                        var container = new Container();
+                                                                        container.addChild(new Button({
+                                                                            label: _("Edit"),
+                                                                            onClick: function() {
+
+
+                                                                                WizardData.put({dc: dc, slot: row});
+
+                                                                                aps.apsc.gotoView('slot-edit');
+                                                                            }
+                                                                        }));
+                                                                        return container;
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }]
+
+                                                ]]
+                                        ]]
+                                ]
+                            ]);
+
+
+
+
+                        }
+
+                        get_slots_grid();
+
+
+                    }
+            );
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

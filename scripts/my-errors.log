@@ -1,0 +1,223 @@
+exception exception 'Exception' with message 'http_code : 201' in /var/www/html/openstack/controllers/CurlManager.php:77
+Stack trace:
+#0 /var/www/html/openstack/controllers/CurlManager.php(20): CurlManager->sendPostData('http://176.74.2...', Array, Array, 'POST')
+#1 /var/www/html/openstack/controllers/OSApi.php(56): CurlManager->send('http://176.74.2...', 5000, 'v3/users', 'POST', Array, Array)
+#2 /var/www/html/openstack/controllers/OSApi.php(544): OSApi->sendWithToken('http://176.74.2...', 5000, 'v3/users', 'POST', Array)
+#3 /var/www/html/openstack/organization.php(392): OSApi->createUsers('d07d169b60e3439...', 'Default user d0...', 'default', 'javier.ribo@mam...', 'elribonazo3', '78!Wiq4KQ@')
+#4 [internal function]: organization->provision()
+#5 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#6 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#7 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#8 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#9 [internal function]: APS\Loader->__destruct()
+#10 {main}
+exception exception 'Exception' with message 'http_code : 204' in /var/www/html/openstack/controllers/CurlManager.php:77
+Stack trace:
+#0 /var/www/html/openstack/controllers/CurlManager.php(20): CurlManager->sendPostData('http://176.74.2...', Array, Array, 'PUT')
+#1 /var/www/html/openstack/controllers/OSApi.php(56): CurlManager->send('http://176.74.2...', 5000, 'v3/projects/66b...', 'PUT', Array, Array)
+#2 /var/www/html/openstack/controllers/OSApi.php(463): OSApi->sendWithToken('http://176.74.2...', 5000, 'v3/projects/66b...', 'PUT')
+#3 /var/www/html/openstack/organization.php(404): OSApi->grantRoleToProjectUser('66b00c0ac2dd46b...', '30f6237b1a14458...', 'f3ffbe27d94741e...')
+#4 [internal function]: organization->provision()
+#5 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#6 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#7 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#8 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#9 [internal function]: APS\Loader->__destruct()
+#10 {main}
+exception exception 'Exception' with message 'http_code : 201' in /var/www/html/openstack/controllers/CurlManager.php:77
+Stack trace:
+#0 /var/www/html/openstack/controllers/CurlManager.php(20): CurlManager->sendPostData('http://176.74.2...', Array, Array, 'POST')
+#1 /var/www/html/openstack/controllers/OSApi.php(56): CurlManager->send('http://176.74.2...', 5000, 'v3/users', 'POST', Array, Array)
+#2 /var/www/html/openstack/controllers/OSApi.php(544): OSApi->sendWithToken('http://176.74.2...', 5000, 'v3/users', 'POST', Array)
+#3 /var/www/html/openstack/organization.php(395): OSApi->createUsers('314c9ea02af2420...', 'Default user 31...', 'default', 'javier222.ribo@...', 'ribo12345', 'UX97t&M%iu')
+#4 [internal function]: organization->provision()
+#5 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#6 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#7 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#8 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#9 [internal function]: APS\Loader->__destruct()
+#10 {main}
+exception exception 'Exception' with message 'Undefined offset: 0 at /var/www/html/openstack/organization.php:395' in /usr/share/aps/php/aps/2/runtime.php:51
+Stack trace:
+#0 /var/www/html/openstack/organization.php(395): APS\apsErrorHandler(8, 'Undefined offse...', '/var/www/html/o...', 395, Array)
+#1 [internal function]: organization->provision()
+#2 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#3 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#4 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#5 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#6 [internal function]: APS\Loader->__destruct()
+#7 {main}
+exception exception 'Exception' with message 'Undefined offset: 0 at /var/www/html/openstack/organization.php:398' in /usr/share/aps/php/aps/2/runtime.php:51
+Stack trace:
+#0 /var/www/html/openstack/organization.php(398): APS\apsErrorHandler(8, 'Undefined offse...', '/var/www/html/o...', 398, Array)
+#1 [internal function]: organization->provision()
+#2 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#3 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#4 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#5 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#6 [internal function]: APS\Loader->__destruct()
+#7 {main}
+exception exception 'Exception' with message 'Undefined offset: 0 at /var/www/html/openstack/organization.php:400' in /usr/share/aps/php/aps/2/runtime.php:51
+Stack trace:
+#0 /var/www/html/openstack/organization.php(400): APS\apsErrorHandler(8, 'Undefined offse...', '/var/www/html/o...', 400, Array)
+#1 [internal function]: organization->provision()
+#2 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#3 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#4 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#5 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#6 [internal function]: APS\Loader->__destruct()
+#7 {main}
+exception exception 'Exception' with message 'Undefined offset: 0 at /var/www/html/openstack/organization.php:403' in /usr/share/aps/php/aps/2/runtime.php:51
+Stack trace:
+#0 /var/www/html/openstack/organization.php(403): APS\apsErrorHandler(8, 'Undefined offse...', '/var/www/html/o...', 403, Array)
+#1 [internal function]: organization->provision()
+#2 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#3 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#4 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#5 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#6 [internal function]: APS\Loader->__destruct()
+#7 {main}
+exception exception 'Exception' with message 'Undefined offset: 0 at /var/www/html/openstack/organization.php:406' in /usr/share/aps/php/aps/2/runtime.php:51
+Stack trace:
+#0 /var/www/html/openstack/organization.php(406): APS\apsErrorHandler(8, 'Undefined offse...', '/var/www/html/o...', 406, Array)
+#1 [internal function]: organization->provision()
+#2 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#3 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#4 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#5 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#6 [internal function]: APS\Loader->__destruct()
+#7 {main}
+exception exception 'Exception' with message 'Undefined offset: 0 at /var/www/html/openstack/organization.php:409' in /usr/share/aps/php/aps/2/runtime.php:51
+Stack trace:
+#0 /var/www/html/openstack/organization.php(409): APS\apsErrorHandler(8, 'Undefined offse...', '/var/www/html/o...', 409, Array)
+#1 [internal function]: organization->provision()
+#2 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#3 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#4 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#5 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#6 [internal function]: APS\Loader->__destruct()
+#7 {main}
+exception exception 'Exception' with message 'Undefined offset: 0 at /var/www/html/openstack/organization.php:413' in /usr/share/aps/php/aps/2/runtime.php:51
+Stack trace:
+#0 /var/www/html/openstack/organization.php(413): APS\apsErrorHandler(8, 'Undefined offse...', '/var/www/html/o...', 413, Array)
+#1 [internal function]: organization->provision()
+#2 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#3 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#4 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#5 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#6 [internal function]: APS\Loader->__destruct()
+#7 {main}
+exception exception 'Exception' with message 'Unable to find previous password' in /var/www/html/openstack/organization.php:420
+Stack trace:
+#0 [internal function]: organization->provision()
+#1 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#2 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#3 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#4 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#5 [internal function]: APS\Loader->__destruct()
+#6 {main}
+exception exception 'Exception' with message 'Unable to find previous password' in /var/www/html/openstack/organization.php:423
+Stack trace:
+#0 [internal function]: organization->provision()
+#1 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#2 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#3 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#4 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#5 [internal function]: APS\Loader->__destruct()
+#6 {main}
+exception exception 'Exception' with message 'Unable to find previous password' in /var/www/html/openstack/organization.php:424
+Stack trace:
+#0 [internal function]: organization->provision()
+#1 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#2 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#3 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#4 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#5 [internal function]: APS\Loader->__destruct()
+#6 {main}
+exception exception 'Exception' with message 'http_code : 201' in /var/www/html/openstack/controllers/CurlManager.php:77
+Stack trace:
+#0 /var/www/html/openstack/controllers/CurlManager.php(20): CurlManager->sendPostData('http://176.74.2...', Array, Array, 'POST')
+#1 /var/www/html/openstack/controllers/OSApi.php(56): CurlManager->send('http://176.74.2...', 5000, 'v3/users', 'POST', Array, Array)
+#2 /var/www/html/openstack/controllers/OSApi.php(544): OSApi->sendWithToken('http://176.74.2...', 5000, 'v3/users', 'POST', Array)
+#3 /var/www/html/openstack/organization.php(436): OSApi->createUsers('6afc97b64b6e4bf...', 'Default user 6a...', 'default', 'javier1428.ribo...', 'javier.ribo1428', '&BEYqWYIM2')
+#4 [internal function]: organization->provision()
+#5 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#6 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#7 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#8 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#9 [internal function]: APS\Loader->__destruct()
+#10 {main}
+exception exception 'Exception' with message 'Unable to find previous password' in /var/www/html/openstack/organization.php:420
+Stack trace:
+#0 [internal function]: organization->provision()
+#1 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#2 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#3 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#4 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#5 [internal function]: APS\Loader->__destruct()
+#6 {main}
+exception exception 'Exception' with message 'Unable to find previous password' in /var/www/html/openstack/organization.php:413
+Stack trace:
+#0 [internal function]: organization->provision()
+#1 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#2 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#3 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#4 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#5 [internal function]: APS\Loader->__destruct()
+#6 {main}
+exception exception 'Exception' with message 'Unable to find previous password' in /var/www/html/openstack/organization.php:415
+Stack trace:
+#0 [internal function]: organization->provision()
+#1 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#2 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#3 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#4 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#5 [internal function]: APS\Loader->__destruct()
+#6 {main}
+exception exception 'Exception' with message 'Unable to find previous password' in /var/www/html/openstack/organization.php:415
+Stack trace:
+#0 [internal function]: organization->provision()
+#1 /usr/share/aps/php/aps/2/rest.php(699): call_user_func_array(Array, Array)
+#2 /usr/share/aps/php/aps/2/runtime.php(240): Rest\RestService->handle()
+#3 /usr/share/aps/php/aps/2/runtime.php(312): APS\Loader->handleHttpRequest()
+#4 /usr/share/aps/php/aps/2/runtime.php(324): APS\Loader->process()
+#5 [internal function]: APS\Loader->__destruct()
+#6 {main}
+exception exception 'Exception' with message 'Trying to get property of non-object at /var/www/html/openstack/organization.php:421' in /usr/share/aps/php/aps/2/runtime.php:51
+Stack trace:
+#0 /var/www/html/openstack/organization.php(421): APS\apsErrorHandler(8, 'Trying to get p...', '/var/www/html/o...', 421, Array)
+#1 [internal function]: organization->provision()
+#2 /usr/share/aps/php/aps/2/rest.php(700): call_user_func_array(Array, Array)
+#3 /usr/share/aps/php/aps/2/runtime.php(246): Rest\RestService->handle()
+#4 /usr/share/aps/php/aps/2/runtime.php(318): APS\Loader->handleHttpRequest()
+#5 /usr/share/aps/php/aps/2/runtime.php(330): APS\Loader->process()
+#6 [internal function]: APS\Loader->__destruct()
+#7 {main}
+exception exception 'Exception' with message 'Trying to get property of non-object at /var/www/html/openstack/organization.php:421' in /usr/share/aps/php/aps/2/runtime.php:51
+Stack trace:
+#0 /var/www/html/openstack/organization.php(421): APS\apsErrorHandler(8, 'Trying to get p...', '/var/www/html/o...', 421, Array)
+#1 [internal function]: organization->provision()
+#2 /usr/share/aps/php/aps/2/rest.php(700): call_user_func_array(Array, Array)
+#3 /usr/share/aps/php/aps/2/runtime.php(246): Rest\RestService->handle()
+#4 /usr/share/aps/php/aps/2/runtime.php(318): APS\Loader->handleHttpRequest()
+#5 /usr/share/aps/php/aps/2/runtime.php(330): APS\Loader->process()
+#6 [internal function]: APS\Loader->__destruct()
+#7 {main}
+exception exception 'Exception' with message 'Unable to find previous password' in /var/www/html/openstack/organization.php:390
+Stack trace:
+#0 [internal function]: organization->provision()
+#1 /usr/share/aps/php/aps/2/rest.php(700): call_user_func_array(Array, Array)
+#2 /usr/share/aps/php/aps/2/runtime.php(246): Rest\RestService->handle()
+#3 /usr/share/aps/php/aps/2/runtime.php(318): APS\Loader->handleHttpRequest()
+#4 /usr/share/aps/php/aps/2/runtime.php(330): APS\Loader->process()
+#5 [internal function]: APS\Loader->__destruct()
+#6 {main}
+exception exception 'Exception' with message 'Unable to find previous password' in /var/www/html/openstack/organization.php:398
+Stack trace:
+#0 [internal function]: organization->provision()
+#1 /usr/share/aps/php/aps/2/rest.php(700): call_user_func_array(Array, Array)
+#2 /usr/share/aps/php/aps/2/runtime.php(246): Rest\RestService->handle()
+#3 /usr/share/aps/php/aps/2/runtime.php(318): APS\Loader->handleHttpRequest()
+#4 /usr/share/aps/php/aps/2/runtime.php(330): APS\Loader->process()
+#5 [internal function]: APS\Loader->__destruct()
+#6 {main}

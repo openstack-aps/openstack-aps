@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+        <script type="text/javascript" src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+        <script>
+            require([
+                "aps/load",
+                "aps/Output",
+                "aps/Memory",
+                "dojox/mvc/at",
+                "aps/Switch",
+                "aps/ready!",
+                "aps/Button"
+            ], function(load, Output, Memory, at, Switch, ready, Button) {
+                "use strict";
+
+
+                var data_center_info = [{
+                        aps: {
+                            id: "1"
+                        },
+                        info: {
+                            name: "Profile 1",
+                            cpu: "20",
+                            ram: "15GB",
+                            diskspace: "10TB",
+                            usage: "1"
+                        }
+                    }, {
+                        aps: {
+                            id: "2"
+                        },
+                        info: {
+                            name: "Profile 2",
+                            cpu: "10",
+                            ram: "5GB",
+                            diskspace: "100GB",
+                            usage: "4"
+                        }
+                    }, {
+                        aps: {
+                            id: "3"
+                        },
+                        info: {
+                            name: "Profile 3",
+                            cpu: "50",
+                            ram: "20GB",
+                            diskspace: "5TB",
+                            usage: "2"
+                        }
+                    }];
+
+
+                var data_center = new Memory({
+                    data: data_center_info,
+                    id_data_center: "aps.id"
+                });
+
+                function rnd(max) {
+                    max = max || 10;
+                    return Math.round(Math.random() * max);
+                }
+                
+                
+                var data = {
+                    aps: {
+                        id: 1
+                    },
+                    info: {
+                        name: "Data Center " + 1,
+                        n_organizations: rnd(),
+                        n_head_templates: rnd(),
+                        n_images: rnd(),
+                        n_ippools: rnd()
+                    }
+                };
+                
+                
+                var view = ["aps/PageContainer", [
+                        ["<h2>", {
+                                innerHTML: data.info.name
+                            }],
+                        ["aps/Toolbar", [
+                                ["aps/ToolbarButton", {
+                                        label: _("Settings"),
+                                        onClick: function() {
+                                            aps.apsc.gotoView('datacenter-settings');
+                                        }
+                                    }],
+                                ["aps/ToolbarButton", {
+                                        label: _("Ippools"),
+                                        onClick: function() {
+                                            aps.apsc.gotoView('ippool');
+                                        }
+                                    }],
+                                ["aps/ToolbarButton", {
+                                        label: _("ISO"),
+                                        onClick: function() {
+                                            aps.apsc.gotoView('iso');
+                                        }
+                                    }],
+                                ["aps/ToolbarButton", {
+                                        label: _("Profile"),
+                                        disabled: true
+                                    }]
+                            ]],
+                        ["aps/FieldSet", {
+                                title: _("Profiles")
+                            }],
+                        ["aps/Toolbar",
+                            [["aps/ToolbarButton", {
+                                        label: "Add New Profile",
+                                        iconClass: "sb-add",
+                                        onClick: function() {
+                                            this.cancel();
+                                        }
+                                    }],
+                                ["aps/ToolbarButton", {
+                                        label: "Refresh",
+                                        iconClass: "sb-refresh",
+                                        onClick: function() {
+                                            this.cancel();
+                                        }
+                                    }],
+                                ["aps/ToolbarButton", {
+                                        label: "Delete",
+                                        iconClass: "sb-delete",
+                                        disabled: true
+                                    }]
+                            ]],
+                        ["aps/Grid", {
+                                store: data_center,
+                                id: "gridId",
+                                columns: [
+                                    {name: "Name", field: "info.name"},
+                                    {name: "CPU", field: "info.cpu"},
+                                    {name: "RAM", field: "info.ram"},
+                                    {name: "Disckspace", field: "info.diskspace"},
+                                    {name: "Usage", field: "info.usage"},
+                                    {name: "Actions", renderCell: function() {
+                                            return new Button({
+                                                label: 'Edit',
+                                                onClick: function() {
+                                                    this.cancel();
+                                                }
+                                            });
+                                        }
+                                    }
+                                ]
+                            }]
+                    ]];
+                load(view);
+            });
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

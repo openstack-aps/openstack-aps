@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+        <script type="text/javascript" src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+        <script>require([
+                "aps/load",
+                "aps/Output",
+                "aps/Memory",
+                "aps/Switch",
+                "aps/Button",
+                "aps/CheckBox",
+                "aps/WizardData",
+                "mamasu/mamadojo.js",
+                "dojox/mvc/getPlainValue",
+                "dojox/mvc/at",
+                "dojox/mvc/getStateful",
+                "tabslist.js",
+                "aps/ready!"
+            ], function(load, Output, Memory, Switch, Button, CheckBox, WizardData, mdojo, getPlainValue, at, getStateful, tabslist) {
+                "use strict";
+
+                
+         
+                var data = WizardData.get();
+                var dc = data.dc;
+                var newIso = getStateful({
+                    aps: {
+                        type: mdojo.Types.image
+                    },
+                    id: "",
+                    name: "",
+                    os: ""
+                });
+                mdojo.ECRUD.read(dc.aps.id + "/listimages").then(function(images) {
+                    var imageOptions = [];
+                    for (var i = 0; i < images.length; i++) {
+                        imageOptions.push({
+                            label: images[i].name,
+                            value: images[i].id,
+                            selected: i === 0
+                        });
+                        newIso.id = images[i].id;
+                    }
+                    var slotsCounter = [];
+                    slotsCounter.push({
+                        label: _("Undefined"),
+                        value: 0,
+                        selected: true
+                    });
+                    
+                    for (var e = 1; e <= 20; e++) {
+                        slotsCounter.push({
+                            label: _("Slot ") + e,
+                            value:e
+                        });
+                    }
+
+                    var view = ["aps/PageContainer", {id: "main_page"}, [
+                            ["aps/Container", [
+                                    ['<h1>', {innerHTML: dc.name}],
+                                    mdojo.Widgets.Tabs(tabslist, 'iso'),
+                                    ["<h2>", {
+                                            innerHTML: _("Register new Glance Image")
+                                        }],
+                                        ["<p>", {
+										    innerHTML: _("What Operating System name the customers should see when creating servers based on linked images? <br>Examples: Windows 2012, Red Hat Server, CentOS 7")
+										}],
+                                    ["aps/FieldSet", {title: _("Glance Image Settings")}, [
+                                            ["aps/TextBox", {
+                                                    label: _("Image name"),
+                                                    value: at(newIso, 'name')
+                                                }],
+                                            ["aps/TextBox", {
+                                                    label: _("OS"),
+                                                    value: at(newIso, 'os')
+                                                }],
+                                            ["aps/Select", {
+                                                    label: _("Open Stack Image"),
+                                                    options: imageOptions,
+                                                    value: at(newIso, 'id')
+                                                }]/*,
+                                            ["aps/Select", {
+                                                    label: _("Counter slot"),
+                                                    options: slotsCounter,
+                                                    value: at(newIso, 'slot')
+                                                }]*/
+                                        ]],
+                                    ["aps/Button", {
+                                            id: "save",
+                                            title: _("Save"),
+                                            onClick: function() {
+                                                var that = this;
+                                                mdojo.ECRUD.create(getPlainValue(newIso), dc.aps.id + "/image").then(function() {
+                                                    mdojo.UI.showSuccess(_("Image was successfully created!"));
+                                                    aps.apsc.gotoView('iso');
+                                                    that.cancel();
+                                                }).otherwise(function(err) {
+                                                    mdojo.UI.showError(err);
+                                                    that.cancel();
+                                                });
+                                            }
+                                        }],
+                                    ["aps/Button", {
+                                            id: "cancel",
+                                            title: _("Cancel"),
+                                            onClick: function() {
+                                                aps.apsc.gotoView('iso');
+                                            }
+                                        }]
+                                ]]
+                        ]];
+                    load(view);
+                });
+            });</script>
+    </head>
+    <body>
+    </body>
+</html>

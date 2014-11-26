@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+        <script>
+            require([
+                "aps/load",
+                "aps/Output",
+                "aps/Memory",
+                "dojo/promise/all",
+                "dojox/mvc/at",
+                "dojox/mvc/getStateful",
+                "dojox/mvc/getPlainValue",
+                "dojox/mvc/StatefulArray",
+                "aps/Switch",
+                "dijit/registry",
+                "aps/Button",
+                "aps/TextBox",
+                "aps/CheckBox",
+                "aps/WizardData",
+                "aps/ResourceStore",
+                "dojo/Deferred",
+                "mamasu/mamadojo.js",
+                "tabslist.js",
+                "aps/ready!"
+            ],
+                    function(load, Output, Memory, all, at, getStateful, getPlainValue, StatefulArray, Switch, registry, Button, TextBox, CheckBox, WizardData, ResourceStore, Deferred, mdojo, tabslist) {
+                        var $ = window.$;
+                        var data = WizardData.get();
+
+                        var dc = data.dc;
+
+                        var prom = [];
+                        prom.push(mdojo.ECRUD.read(dc.aps.id + "/getslots"));
+                        prom.push(mdojo.ECRUD.simpleStoreByTarget(dc.aps.id).get("image"));
+
+                        all(prom).then(function(promResult) {
+                            var slots = promResult[0];
+                            var images = promResult[1];
+                            var imagesOriginal = mdojo.utils.clone(images);
+
+                            console.log("SLOTS", slots, "IMAGES", images);
+                            for (var i = 0; i < slots.length; i++) {
+                                if (slots[i].images !== null) {
+                                    for (var j = 0; j < slots[i].images.length; j++) {
+                                        console.log(slots[i].id + "!=" + data.slot.id);
+                                        if (slots[i].id !== data.slot.id) {
+                                            console.log("Finding images ", images.length);
+                                            for (var m = 0; m < imagesOriginal.length; m++) {
+                                                console.log(slots[i].images[j] + "==" + imagesOriginal[m].aps.id);
+                                                if (slots[i].images[j] === imagesOriginal[m].aps.id) {
+                                                    images.splice(images.indexOf(slots[i].images[j]), 1);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                }
+                            }
+
+                            data.slot.images = (data.slot.images === null) ? [] : data.slot.images;
+
+                            console.log("images is ", images);
+
+
+                            var selectionArray = new StatefulArray(data.slot.images);
+
+                            load(["aps/PageContainer", {id: 'main_page'},
+                                [
+                                    ["aps/Container", [
+                                            ['<h1>', {innerHTML: dc.name}],
+                                            mdojo.Widgets.Tabs(tabslist, 'slots'),
+                                            ["aps/Container", {
+                                                    title: _("Edit Slot ") + data.slot.id
+                                                }, [
+													
+                                                    ["aps/FieldSet", [
+                                                            ["aps/TextBox", {id: "slot_name", required: true, label: "Slot name", value: at(data.slot, "name")}]
+                                                        ]]
+                                                ]],
+                                                ["<br>"],
+                                            ["aps/Container", {
+                                                    title: _("Glance images Slot ") + data.slot.id
+                                                }, [
+													["<p>", {
+													    innerHTML: _("Which Glance images you want to link to Slot " + data.slot.id +  ", shown to the Customer Control Panel as <b>" + data.slot.name + "</b> ?")
+													}],
+                                                    ["aps/Grid", {
+                                                            store: new Memory({
+                                                                data: images,
+                                                                idProperty: "aps.id"
+                                                            }),
+                                                            id: "imagesGrid",
+                                                            selectionMode: "multiple",
+                                                            selectionArray: selectionArray,
+                                                            showPaging: false,
+                                                            noEntriesFound: _("There's no available Glance images."),
+                                                            columns: [
+                                                                {name: "Name", field: "name"},
+                                                                {name: "OS", field: "os"},
+                                                                {name: "Glance Image", field: "image"},
+                                                                {name: "Status", renderCell: function(row) {
+                                                                        var color = "red";
+                                                                        if (row.isostatus === 'active') {
+                                                                            color = "green";
+                                                                        }
+                                                                        return "<span style='color: " + color + "'>" + row.isostatus + "</span>";
+                                                                    }}
+                                                            ]
+                                                        }],
+                                                    ["aps/Button", {title: "Cancel", onClick: function() {
+                                                                aps.apsc.gotoView('slots');
+                                                            }}],
+                                                    ["aps/Button", {title: "Next", onClick: function() {
+
+                                                                var slot_name = $("#slot_name").val();
+                                                                var slot_images = selectionArray;
+
+                                                                var update_slot = {};
+
+                                                                update_slot.id = data.slot.id;
+                                                                update_slot.name = slot_name;
+                                                                update_slot.images = slot_images;
+
+                                                                console.log("selection array ", update_slot.images);
+
+                                                                WizardData.put({dc: dc, slot: update_slot});
+                                                                aps.apsc.gotoView('slot-final');
+
+
+                                                                this.cancel();
+
+                                                            }}],
+                                                    ["aps/Button", {title: "Finish", onClick: function() {
+
+                                                                var slot_name = $("#slot_name").val();
+                                                                var slot_images = selectionArray;
+
+                                                                var update_slot = {};
+
+                                                                update_slot.id = data.slot.id;
+                                                                update_slot.name = slot_name;
+                                                                update_slot.images = slot_images;
+
+                                                                mdojo.ECRUD.post(data.dc.aps.id + "/editslots", "slots=" + JSON.stringify(update_slot)).then(function(data) {
+
+                                                                    if (data.success) {
+                                                                        WizardData.put({dc: dc});
+                                                                        aps.apsc.gotoView('slots');
+                                                                    } else {
+                                                                        console.log(data.error);
+                                                                    }
+
+                                                                });
+
+                                                                this.cancel();
+
+                                                            }}]
+
+
+
+                                                ]]
+                                        ]]
+                                ]
+                            ]);
+                        });
+
+                    }
+            );
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+        <script type="text/javascript" src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+        <script>require([
+                "aps/load",
+                "aps/Output",
+                "dijit/registry",
+                "dojo/Deferred",
+                "dojo/promise/all",
+                "aps/Container",
+                "dojox/mvc/at",
+                "dojox/mvc/getPlainValue",
+                "aps/Switch",
+                "aps/Button",
+                "aps/CheckBox",
+                "aps/WizardData",
+                "mamasu/mamadojo.js",
+                "aps/ResourceStore",
+                "aps/Memory",
+                "aps/ProgressBar",
+                "aps/ready!"
+
+            ], function(load, Output, registry, Deferred, all, Container, at, getPlainValue, Switch, Button, CheckBox, WizardData, mdojo) {
+                "use strict";
+
+
+
+
+                mdojo.ECRUD.read(aps.context.vars.tenant.aps.id + "/getvms").then(function(instances) {
+
+                    console.log(instances);
+
+
+
+                    var active_list_array = [];
+
+                    for (var i = 0; i < instances.length; ++i) {
+
+                        var instance_data = {};
+                        var instance = instances[i];
+                        var addresses = instance.info.addresses;
+                        var m = 0;
+
+                        instance_data.name = instance.name;
+                        instance_data.tenant_id = instance.info.tenant_id;
+                        instance_data.aps_id = instance.aps.id;
+
+                        instance_data.instance_id = instance.instance_id;
+                        instance_data.status = instance.info['status'];
+
+                        if (instance_data.status == "SHUTOFF") {
+
+                            instance_data.status_view = '<span class="caption-status status-stopped">' + _(instance_data.status) + '</span>';
+
+                            instance_data.start_disable = false;
+                            instance_data.restart_disable = true;
+                            instance_data.stop_disable = true;
+
+
+                        } else if (instance_data.status == "ACTIVE") {
+                            instance_data.status_view = '<span class="caption-status status-starting">' + _(instance_data.status) + '</span>';
+
+
+                            instance_data.start_disable = true;
+                            instance_data.restart_disable = false;
+                            instance_data.stop_disable = false;
+
+
+                        } else {
+                            instance_data.status_view = '<span class="caption-status status-maintenance">' + _(instance_data.status) + '</span>';
+                            instance_data.start_disable = true;
+                            instance_data.restart_disable = true;
+                            instance_data.stop_disable = true;
+                        }
+
+                        for (var netIndex = 0; netIndex < addresses.length; netIndex++) {
+
+
+                            if (m > 0)
+                                break;
+
+
+                            instance_data.internalip = _("Internal IP: ") + addresses[netIndex][0].addr;
+
+                            ++m;
+
+                        }
+
+                        var new_active_item = ["aps/ActiveItem", {
+                                iconName: "/pem/images/icons/hosts_32x32.gif",
+                                title: instance_data.name,
+                                info: instance_data.status_view,
+                                collapsible: false,
+                                description: [
+                                    new Output({
+                                        innerHTML: instance_data.internalip,
+                                        "class": "summary-item"
+                                    })
+                                ]
+
+                            }, [
+                                ["aps/ToolbarButton", {
+                                        className: "sb-enable",
+                                        id: i + "start",
+                                        label: "Start",
+                                        cancellid: i,
+                                        apsId: instance_data.aps_id,
+                                        instanceid: instance_data.instance_id,
+                                        disabled: instance_data.start_disable,
+                                        onClick: function() {
+                                            var that = this;
+                                            that.cancel();
+
+                                            console.log("starting " + that.apsId);
+
+                                            mdojo.ECRUD.get(that.apsId + "/start").then(function(data) {
+                                                if (data.response == "ok") {
+                                                    console.log("ok");
+                                                    mdojo.UI.showSuccess(_("Starting server"));
+                                                    that.set("disabled", true);
+
+
+                                                } else {
+
+                                                    mdojo.UI.showError(data.response);
+                                                }
+
+
+                                            }).otherwise(function(err) {
+                                                console.log("ERROR " + err.message);
+                                                mdojo.UI.showError(err.message);
+
+                                            });
+                                        }
+                                    }],
+                                ["aps/ToolbarButton", {
+                                        className: "sb-disable",
+                                        label: "Stop",
+                                        id: i + "stop",
+                                        cancellid: i,
+                                        apsId: instance_data.aps_id,
+                                        instanceid: instance_data.instance_id,
+                                        disabled: instance_data.stop_disable,
+                                        onClick: function() {
+                                            var that = this;
+                                            that.cancel();
+                                            console.log("stoping " + that.i + "restart");
+
+                                            mdojo.ECRUD.get(that.apsId + "/stop").then(function(data) {
+
+                                                if (data.response == "ok") {
+                                                    mdojo.UI.showSuccess(_("Stopping server"));
+
+
+                                                    console.log("Disabling " + that.cancellid + "restart");
+                                                    that.set("disabled", true);
+                                                    var object = registry.byId(that.cancellid + "restart");
+                                                    if (object !== "undefined") {
+                                                        object.set("disabled", true);
+                                                    } else {
+                                                        console.log("button undefined");
+                                                    }
+                                                } else {
+
+                                                    mdojo.UI.showError(data.response);
+                                                }
+
+
+                                            }).otherwise(function(err) {
+                                                console.log("ERROR " + err.message);
+                                                mdojo.UI.showError(err.message);
+
+                                            });
+                                        }
+                                    }],
+                                ["aps/ToolbarButton", {
+                                        label: "Restart",
+                                        className: "sb-refresh",
+                                        id: i + "restart",
+                                        cancellid: i,
+                                        apsId: instance_data.aps_id,
+                                        instanceid: instance_data.instance_id,
+                                        disabled: instance_data.restart_disable,
+                                        onClick: function() {
+                                            var that = this;
+                                            that.cancel();
+
+                                            mdojo.ECRUD.get(that.apsId + "/restart").then(function(data) {
+
+                                                if (data.response == "ok") {
+                                                    console.log("ok");
+                                                    that.set("disabled", true);
+
+                                                    console.log("Disabling " + that.cancellid + "stop");
+                                                    var object = registry.byId(that.cancellid + "stop");
+
+                                                    if (object !== 'undefined') {
+                                                        object.set("disabled", true);
+                                                    } else {
+                                                        console.log("button undefined");
+                                                    }
+
+                                                    mdojo.UI.showSuccess(_("Restart server"));
+                                                } else {
+                                                    mdojo.UI.showError(data.response);
+                                                }
+
+
+                                            }).otherwise(function(err) {
+                                                console.log("ERROR " + err.message);
+                                                mdojo.UI.showError(err.message);
+
+                                            });
+                                        }
+                                    }]
+
+
+
+                            ]];
+
+                        active_list_array.push(new_active_item);
+                    }
+
+
+                    load(["aps/PageContainer", {id: "main_page"}, [
+                            ["aps/ActiveList", active_list_array
+                            ]]]);
+
+                }).otherwise();
+
+
+
+
+
+
+
+            });
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

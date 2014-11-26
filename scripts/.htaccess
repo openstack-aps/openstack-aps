@@ -1,0 +1,19 @@
+Options +FollowSymLinks +ExecCGI
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /openstack
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_URI} !=/favicon.ico
+    RewriteRule ^app(|/.*)$ app.php?q=$1 [L,QSA]
+    RewriteRule ^dc(|/.*)$ dc.php?q=$1 [L,QSA]
+    RewriteRule ^heatstack(|/.*)$ heatstack.php?q=$1 [L,QSA]
+    RewriteRule ^image(|/.*)$ image.php?q=$1 [L,QSA]
+    RewriteRule ^ip(|/.*)$ ip.php?q=$1 [L,QSA]
+    RewriteRule ^ipassigned(|/.*)$ ipassigned.php?q=$1 [L,QSA]
+    RewriteRule ^ippool(|/.*)$ ippool.php?q=$1 [L,QSA]
+    RewriteRule ^ippools(|/.*)$ ippool.php?q=$1 [L,QSA]
+    RewriteRule ^organization(|/.*)$ organization.php?q=$1 [L,QSA]
+    RewriteRule ^profile(|/.*)$ profile.php?q=$1 [L,QSA]
+    RewriteRule ^unmanagedve(|/.*)$ unmanagedve.php?q=$1 [L,QSA]
+</IfModule>
+ 

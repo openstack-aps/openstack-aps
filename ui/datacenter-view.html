@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+        <script type="text/javascript" src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script>
+            require([
+                "aps/load",
+                "dojo/Deferred",
+                "dojox/mvc/getPlainValue",
+                "dojox/mvc/at",
+                "dojox/mvc/getStateful",
+                "aps/Switch",
+                "aps/Button",
+                "aps/WizardData",
+                "mamasu/mamadojo.js",
+                "tabslist.js",
+                "aps/ready!"
+            ], function(load, Deferred, getPlainValue, at, getStateful, Switch, Button, WizardData, mdojo, tabslist) {
+                "use strict";
+
+             
+                
+                var data = WizardData.get();
+                var dc = getStateful(data.dc);
+
+                var view = ["aps/PageContainer", {id: "main_page"}, [
+                        ["aps/Container", [
+                                ['<h1>', {innerHTML: dc.name}],
+                                mdojo.Widgets.Tabs(tabslist, 'datacenter'),
+                                ["aps/FieldSet", {
+                                        title: _("Data Center Settings")
+                                    }, [
+                                        ["aps/Output", {
+                                                label: "DC Name",
+                                                value: at(dc, 'name')
+                                            }]
+                                    ]], ["<br>"],
+                                ["aps/FieldSet", {
+                                        title: _("API Connection Settings")
+                                    }, [
+                                        ["aps/Output", {
+                                                label: _("URL"),
+                                                value: at(dc, 'apiurl')
+                                            }],
+                                        ["aps/Output", {
+                                                label: _("User"),
+                                                value: at(dc, 'user')
+                                            }],
+                                        ["aps/Output", {
+                                                label: _("Password"),
+                                                value: "********"
+                                            }],
+                                        ["aps/Output", {
+                                                label: _("Proxy")
+                                            }]
+                                    ]
+                                ]
+                            ]],
+                        ['aps/Button', {
+                                title: _("Back to data centers"),
+                                onClick: function() {
+                                    aps.apsc.gotoView('datacenters');
+                                }
+                            }]
+                    ]];
+                load(view);
+            });
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+        <script type="text/javascript" src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+        <script>
+            require([
+                "aps/load",
+                "dojo/Deferred",
+                "dojox/mvc/getPlainValue",
+                "dojox/mvc/at",
+                "dojox/mvc/getStateful",
+                "aps/Switch",
+                "aps/Button",
+                "aps/WizardData",
+                "mamasu/mamadojo.js",
+                "tabslist.js",
+                "aps/ready!"
+            ], function(load, Deferred, getPlainValue, at, getStateful, Switch, Button, WizardData, mdojo, tabslist) {
+                "use strict";
+                
+                var data = WizardData.get();
+                var dc = getStateful(data.dc);
+                var visibility = getStateful({
+                    edition: false,
+                    showing: true
+                });
+                console.log("Datacenter", dc);
+                mdojo.ECRUD.read(dc.aps.id + "/getroles").then(function(rolsoptions) {
+                    var labels = getStateful({
+                        admin: "undefined",
+                        member: "undefined"
+                    });
+                    var adminRoles = [];
+                    var memberRoles = [];
+                    for (var i = 0; i < rolsoptions.length; i++) {
+                        adminRoles.push(rolsoptions[i]);
+                        memberRoles.push(rolsoptions[i]);
+                        if (dc.admin_role === rolsoptions[i].value) {
+                            labels.set('admin', rolsoptions[i].label + " [ID: " + rolsoptions[i].value + "]");
+                            adminRoles[i].selected = true;
+                        }
+                        if (dc.member_role === rolsoptions[i].value) {
+                            labels.set('member', rolsoptions[i].label + " [ID: " + rolsoptions[i].value + "]");
+                            memberRoles[i].selected = true;
+                        }
+                    }
+
+                    var view = ["aps/PageContainer", {id: "main_page"}, [
+                            ["aps/Container", [
+                                    ['<h1>', {innerHTML: dc.name}],
+                                    mdojo.Widgets.Tabs(tabslist, 'roles'),
+                                    ["aps/FieldSet", {
+                                            visible: at(visibility, "showing"),
+                                            title: _("Roles assignment")
+                                        }, [
+                                            ["aps/Output", {
+                                                    label: _("Admin role"),
+                                                    value: at(labels, 'admin')
+                                                }],
+                                            ["aps/Output", {
+                                                    label: _("Member role"),
+                                                    value: at(labels, 'member')
+                                                }]
+                                        ]],
+                                    ["aps/FieldSet", {
+                                            visible: at(visibility, "edition"),
+                                            title: _("Roles assignment")
+                                        }, [
+                                            ["aps/Select", {
+                                                    label: "Admin role",
+                                                    value: at(dc, 'admin_role'),
+                                                    options: adminRoles
+                                                }],
+                                            ["aps/Select", {
+                                                    label: "Member role",
+                                                    value: at(dc, 'member_role'),
+                                                    options: memberRoles
+                                                }]
+                                        ]]
+                                ]],
+                            ["<br>"],
+                            ['aps/Button', {
+                                    title: _("Edit"),
+                                    visible: at(visibility, 'showing'),
+                                    onClick: function() {
+                                        visibility.set('edition', true);
+                                        visibility.set('showing', false);
+                                        this.cancel();
+                                    }
+                                }],
+                            ['aps/Button', {
+                                    title: _("Back to data centers"),
+                                    visible: at(visibility, 'showing'),
+                                    onClick: function() {
+                                        aps.apsc.gotoView('datacenters');
+                                    }
+                                }],
+                            ['aps/Button', {
+                                    title: _("Save"),
+                                    visible: at(visibility, 'edition'),
+                                    onClick: function() {
+                                        var that = this;
+                                        mdojo.ECRUD.update(dc).then(function() {
+                                            for (var i = 0; i < rolsoptions.length; i++) {
+                                                if (dc.admin_role === rolsoptions[i].value) {
+                                                    labels.set('admin', rolsoptions[i].label + " [ID: " + rolsoptions[i].value + "]");
+                                                }
+                                                if (dc.member_role === rolsoptions[i].value) {
+                                                    labels.set('member', rolsoptions[i].label + " [ID: " + rolsoptions[i].value + "]");
+                                                }
+                                            }
+                                            visibility.set('edition', false);
+                                            visibility.set('showing', true);
+                                            that.cancel();
+                                        }).otherwise(function(err) {
+                                            mdojo.UI.showError(err);
+                                            visibility.set('edition', false);
+                                            visibility.set('showing', true);
+                                            that.cancel();
+                                        });
+                                    }
+                                }],
+                            ['aps/Button', {
+                                    title: _("Cancel"),
+                                    visible: at(visibility, 'edition'),
+                                    onClick: function() {
+                                        visibility.set('edition', false);
+                                        visibility.set('showing', true);
+                                        this.cancel();
+                                    }
+                                }]
+                        ]];
+                    load(view);
+                }).otherwise(mdojo.UI.showError);
+            });
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

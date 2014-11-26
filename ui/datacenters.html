@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+        <script type="text/javascript" src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script>require([
+                "aps/load",
+                "dijit/registry",
+                "dojo/Deferred",
+                "dojo/promise/all",
+                "aps/Container",
+                "dojox/mvc/at",
+                "aps/Switch",
+                "aps/Button",
+                "aps/CheckBox",
+                "aps/WizardData",
+                "mamasu/mamadojo.js",
+                "aps/Output",
+                "aps/ready!"
+            ], function(load, registry, Deferred, all, Container, at, Switch, Button, CheckBox, WizardData, mdojo, Output) {
+                "use strict";
+
+
+                function canBeDeleted(dcApsId) {
+                    var def = new Deferred();
+                    mdojo.ECRUD.get(dcApsId + "/canbedeleted").then(def.resolve).otherwise(def.reject);
+                    return def;
+                }
+
+                var tobedeleted = [];
+                load(["aps/PageContainer", {id: 'main_page'}, [
+                        ["aps/FieldSet", {
+                                title: "Data Centers"
+                            }],
+                        ["aps/Toolbar",
+                            [["aps/ToolbarButton", {
+                                        label: "Add New Data Center",
+                                        iconName: "/pem/images/icons/new_16x16.gif",
+                                        onClick: function() {
+                                            aps.apsc.gotoView('datacenter-new');
+                                        }
+                                    }],
+                                ["aps/ToolbarButton", {
+                                        label: "Delete",
+                                        iconName: "/pem/images/icons/delete_16x16.gif",
+                                        disabled: true,
+                                        id: "deletebtn",
+                                        onClick: function() {
+                                            var that = this;
+                                            if (confirm(_("Selected DCs will be removed. Are you sure?"))) {
+                                                mdojo.ECRUD.deleteArrayOfIDs(tobedeleted).then(function() {
+                                                    that.cancel();
+                                                    registry.byId('gridId').refresh();
+                                                    mdojo.UI.showSuccess(_("Selected DCs were successfully deleted!"));
+                                                }).otherwise(function(err) {
+                                                    that.cancel();
+                                                    mdojo.UI.showError(err);
+                                                });
+                                            } else {
+                                                that.cancel();
+                                            }
+                                        }
+                                    }],
+                                ["aps/ToolbarButton", {
+                                        label: _("Refresh"),
+                                        style: "float:right",
+                                        iconName: "/pem/images/icons/refresh_16x16.gif",
+                                        onClick: function() {
+                                            var that = this;
+                                            mdojo.ECRUD.read(aps.context.vars.application.aps.id + "/dc").then(function(dcs) {
+                                                var promises = [];
+                                                for (var i = 0; i < dcs.length; i++) {
+                                                    promises = mdojo.ECRUD.get(dcs[i].aps.id + "/updatedatacenter");
+                                                }
+                                                all(promises).then(function() {
+                                                    that.cancel();
+                                                    registry.byId('dcGrid').refresh();
+                                                    window.setTimeout(function() {
+                                                        registry.byId('dcGrid').refresh();
+                                                    }, 2000);
+                                                    mdojo.UI.showSuccess(_("Data centers information was successfully updated."));
+                                                }).otherwise(function(err) {
+                                                    that.cancel();
+                                                    mdojo.UI.showError(err);
+                                                });
+                                            }).otherwise(function(err) {
+                                                that.cancel();
+                                                mdojo.UI.showError(err);
+                                            });
+                                        }
+                                    }]
+                            ]],
+                        ["aps/Grid", {
+                                store: mdojo.ECRUD.simpleStoreByTarget(aps.context.vars.application.aps.id + "/dc"),
+                                id: "dcGrid",
+                                columns: [
+                                    {name: "",
+                                        renderCell: function(row) {
+                                            var checkbox = new CheckBox({
+                                                onClick: function() {
+                                                    var newArray = [];
+                                                    for (var i = 0; i < tobedeleted.length; i++) {
+                                                        if (tobedeleted[i] !== row.aps.id) {
+                                                            newArray.push(tobedeleted[i]);
+                                                        }
+                                                    }
+                                                    if (this.checked) {
+                                                        canBeDeleted(row.aps.id).then(function(data) {
+                                                            if (data.success) {
+                                                                newArray.push(row.aps.id);
+                                                                tobedeleted = newArray;
+                                                                registry.byId('deletebtn').set('disabled', tobedeleted.length === 0);
+                                                                mdojo.UI.log("TOBEDELETED", tobedeleted);
+                                                            } else {
+                                                                checkbox.set('checked', false);
+                                                                mdojo.UI.showError(_('Datacenter __DCNAME__ has projects and cannot be deleted.', {DCNAME: row.name}));
+                                                            }
+                                                        }).otherwise(function(err) {
+                                                            checkbox.set('checked', false);
+                                                            mdojo.UI.showError(_('There was a problem while checking if datacenter __DCNAME__ has projects. Error: __ERROR__', {DCNAME: row.name, ERROR: err.message}));
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                            return checkbox;
+                                        }
+                                    },
+                                    {
+                                        name: "Name",
+                                        renderCell: function(row) {
+                                            var newoutput = new Output({
+                                                innerHTML: '<a href="#">' + row.name + '</a>',
+                                                onClick: function() {
+                                                    WizardData.put({dc: row});
+                                                    aps.apsc.gotoView('datacenter-view');
+
+                                                }
+                                            });
+                                            return newoutput;
+                                        }
+                                    },
+                                    {name: "Nº Organizations", field: "numorganizations"},
+                                    {name: "Nº Profiles", field: "numprofiles"},
+                                    {name: "Nº Images", field: "numimages"},
+                                    {name: "Nº Ippools", field: "numippools"},
+                                    {name: "Actions",
+                                        renderCell: function(row) {
+                                            var container = new Container();
+                                            container.addChild(new Button({
+                                                label: _("Edit"),
+                                                onClick: function() {
+                                                    WizardData.put({dc: row});
+                                                    aps.apsc.gotoView('datacenter-edit');
+                                                }
+                                            }));
+                                            return container;
+                                        }
+                                    }
+                                ]
+                            }]
+                    ]]);
+            });</script>
+    </head>
+    <body>
+        <!--<span data-dojo-type=""></span>-->
+    </body>
+</html>

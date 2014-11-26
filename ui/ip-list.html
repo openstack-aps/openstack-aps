@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+        <script type="text/javascript" src="/aps/2/ui/runtime/client/aps/aps.js"></script>
+        <script type="text/javascript" src="js/lib/jquery.min.js"></script>
+        <script>require([
+                "aps/load",
+                "aps/Output",
+                "aps/Container",
+                "aps/Memory",
+                "dojox/mvc/at",
+                "aps/Switch",
+                "aps/WizardData",
+                "aps/Button",
+                "mamasu/mamadojo.js",
+                "tabslist.js",
+                "aps/ready!"
+            ], function(load, Output, Container, Memory, at, Switch, WizarData, Button, mdojo, tabslist) {
+                "use strict";
+
+
+
+                var data = WizarData.get();
+                mdojo.UI.log("Wizard Data", data);
+                function getAllocationRange(start, end) {
+                    function dot2num(dot) {
+                        var d = dot.split('.');
+                        return ((((((+d[0]) * 256) + (+d[1])) * 256) + (+d[2])) * 256) + (+d[3]);
+                    }
+                    function num2dot(num) {
+                        var d = num % 256;
+                        for (var i = 3; i > 0; i--) {
+                            num = Math.floor(num / 256);
+                            d = num % 256 + '.' + d;
+                        }
+                        return d;
+                    }
+
+                    start = dot2num(start);
+                    end = dot2num(end);
+                    var options = [];
+                    for (var i = start; i <= end; i++) {
+                        options.push(num2dot(i));
+                    }
+                    return options;
+                }
+                function getFullIpRange(ippool) {
+                    var ips = [];
+                    for (var i = 0; i < ippool.allocation_pools.length; i++) {
+                        var options = getAllocationRange(ippool.allocation_pools[i].start, ippool.allocation_pools[i].end);
+                        for (var j = 0; j < options.length; j++) {
+                            ips.push({
+                                gateway: ippool.gateway_ip,
+                                ip: options[j]
+                            });
+                        }
+                    }
+                    return ips;
+                }
+                mdojo.ECRUD.read(data.subnet).then(function(ippool) {
+                    var data_center = new Memory({
+                        data: getFullIpRange(ippool),
+                        id_data_center: "aps.id"
+                    });
+                    var view = ["aps/PageContainer", {id: "main_page"}, [
+                            ["<h1>", {
+                                    innerHTML: ippool.name
+                                }],
+                            mdojo.Widgets.Tabs(tabslist, 'ippools'),
+                            ["aps/Container", {
+                                    title: "IP List"
+                                }, [["aps/Grid", {
+                                            store: data_center,
+                                            id: "gridId",
+                                            columns: [
+                                                {name: "IP", field: "ip"},
+                                                {name: "Gateway", field: "gateway"}
+                                            ]
+                                        }],
+                                    ["aps/Button", {
+                                            label: _("Return"),
+                                            onClick: function() {
+                                                aps.apsc.gotoView("ippool");
+                                            }
+                                        }]
+                                ]
+                            ]
+                        ]];
+                    load(view);
+                }).otherwise(mdojo.UI.showError);
+            });</script>
+    </head>
+    <body>
+    </body>
+</html>
