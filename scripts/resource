@@ -1,4 +1,0 @@
-#!/bin/bash
-
-curl -k -E ./config/2583efaf-edd3-4d32-b39c-9ac88f19c309.pem  -X $1 https://a.mamasu.apsdemo.org:6308/aps/2/resources/$2 -d $3
-
